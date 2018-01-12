@@ -1,90 +1,150 @@
 <template>
   <div id="app">
-    <transition name="bounce">
-      <router-view/>
-    </transition>
+    <x-header v-if="this.$const.userAgent().weixin === false" ref="xaheader"
+              :right-options="{showMore: true}"
+              @on-click-more="showMenus = true">{{this.$route.meta.title}}
+    </x-header>
+    <box class="app-box" :style="{height: wrapperHeight + 'px'}">
+      <drawer :show.sync="drawerVisibilit" :show-mode="showModeValue" :placement="showPlacementValue"
+              :drawer-style="{'background-color':'#f0f1f5', width: '65%'}">
+        <!-- drawer content -->
+        <box slot="drawer">
+          <xa-home></xa-home>
+        </box>
+        <view-box ref="viewBox" class="xa-drawer-container">
+          <div class="xa-box">
+            <transition :name="'vux-pop-' + (direction === 'forward' ? 'in' : 'out')">
+              <keep-alive>
+                <router-view></router-view>
+              </keep-alive>
+            </transition>
+          </div>
+        </view-box>
+      </drawer>
+    </box>
+    <loading v-model="isLoading"></loading>
   </div>
 </template>
 
 <script>
+  import XaHeader from '../src/components/XaHeader'
+  import {mapState} from 'vuex'
+  import {Box, Drawer, Loading, TransferDom, ViewBox, XHeader} from 'vux'
+  import XaHome from './components/home'
+
   export default {
     name: 'app',
+    data() {
+      return {
+        wrapperHeight: '',
+        showMore: false,
+        showMenu: false,
+        drawerVisibilit: false,
+        showModeValue: 'push',
+        showPlacementValue: 'left',
+        heightTop: ''
+      }
+    },
+    watch: {
+      '$route': function (to, form, next) {
+        if (to.name !== form.name) {
+          this.drawerVisibilit = false;
+        }
+      },
+      'drawerVisibility': function () {
+        this.drawerVisibilit = this.drawerVisibility;
+      },
+      'drawerVisibilit': function () {
+        if (this.drawerVisibilit) {
+          this.$store.commit('UPDATE_HOMESHOW', {isHomeShow: true});
+        } else {
+          this.$store.commit('UPDATE_HOMESHOW', {isHomeShow: false});
+        }
+      }
+    },
+    directives: {
+      TransferDom
+    },
+    computed: {
+      ...mapState({
+        direction: state => state.mutations.direction,
+        isLoading: state => state.mutations.isLoading,
+        drawerVisibility: state => state.mutations.isHomeShow
+      })
+    },
+    components: {
+      Box,
+      ViewBox,
+      Drawer,
+      XaHeader,
+      XHeader,
+      XaHome,
+      Loading
+    },
+    created() {
+    },
     mounted() {
-      document.body.addEventListener('touchstart', function () {
-        // ...空函数即可
-        // console.log('touchstart事件注册成功！');
-      }, false);
-    }
+      console.log(this.$const.userAgent());
+      this.$nextTick(() => {
+        if (this.$const.userAgent().weixin === true) {
+        } else {
+          this.heightTop = this.$refs.xaheader.$el.clientHeight;
+          this.wrapperHeight = document.documentElement.clientHeight - this.$refs.xaheader.$el.clientHeight;
+          // console.log('32424', document.documentElement.clientHeight, this.$refs.xaheader, this.wrapperHeight);
+        }
+      })
+    },
+    methods: {}
   }
 </script>
 
 <style lang="scss">
-  .bounce-enter-active {
-    animation: bounce-in .4s;
-  }
-  .bounce-leave-active {
-    animation: bounce-in .4s reverse;
-  }
-  @-moz-keyframes bounce-in {
-    0% {
-      opacity: 0
-    }
-    100% {
-      opacity: 1
-    }
-  }
-  @-webkit-keyframes bounce-in {
-    0% {
-      opacity: 0
-    }
-    100% {
-      opacity: 1
-    }
-  }
-  @-o-keyframes bounce-in {
-    0% {
-      opacity: 0
-    }
-    100% {
-      opacity: 1
-    }
-  }
-  @keyframes bounce-in {
-    0% {
-      opacity: 0
-    }
-    100% {
-      opacity: 1
-    }
-  }
-  /* 可以设置不同的进入和离开动画 */
-  /* 设置持续时间和动画函数 */
-  .slide-fade-enter-active {
-    transition: all .3s ease;
-  }
-  .slide-fade-leave-active {
-    transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
-  }
-  .slide-fade-enter, .slide-fade-leave-to
-    /* .slide-fade-leave-active for below version 2.1.8 */
-  {
-    transform: translateX(100%);
-    opacity: 0;
+  @import "assets/css/transition.css";
+  .vux-header.v-transfer-dom {
+    width: 100%;
+    z-index: 1000;
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    // background-color: #ffbc61 !important;
   }
   #app {
-    margin: 0;
-    padding: 0;
-    background-color: white;
-    /*background: #f0f1f5;*/
-    min-width: auto;
-    min-height: auto;
-    color: #323232;
-    overflow: hidden;
     width: 100%;
     height: 100%;
-    position: relative;
-    font-family: PingFangSC-Regular, sans-serif, Microsoft Yahei, Helvetica;
-    -webkit-text-size-adjust: 100%;
+    overflow: hidden;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    .app-box {
+      height: 100%;
+      width: 100%;
+    }
+    .vux-drawer {
+      .vux-drawer-body {
+        .xa-drawer-container {
+          height: 100%;
+          width: 100%;
+
+          .weui-tab__panel {
+            padding-bottom: 0;
+          }
+          .xa-box {
+            box-sizing: border-box;
+            height: 100%;
+            background-color: #f0f1f5;
+            width: 100%;
+            position: relative;
+            top: 0;
+            left: 0;
+          }
+          .weui-tab {
+            .weui-tab__panel {
+              height: 100%;
+              box-sizing: border-box;
+              padding-bottom: 0;
+            }
+          }
+        }
+      }
+    }
+
   }
 </style>

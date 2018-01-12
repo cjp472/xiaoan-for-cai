@@ -1,16 +1,28 @@
-// 改版store中各种状态的地方
-export const getMsg = (state, payload) => {
-  state.msg = payload.msg;
-  console.log(state, payload);
-}
-export const getApp = (state, payload) => {
+/**
+ * Created by Administrator on 2017/12/29.
+ */
+import * as types from './types'
+import getters from './getters'
+const state = {
+  isLoading: false,
+  direction: 'forward',
+  isHomeShow: false
+};
 
-  function bbb() {
-    return {"111": "111", "11111": "22323"}
+const mutations = {
+  [types.UPDATE_LOADING](state, status) {
+    state.isLoading = status.isLoading
+  },
+  [types.UPDATE_DIRECTION](state, payload) {
+    state.direction = payload.direction
+  },
+  [types.UPDATE_HOMESHOW](state, payload) {
+    state.isHomeShow = payload.isHomeShow
   }
+};
 
- // state.app = bbb();   //state 表示暴露的rootState 初始数据  payLoad为actions 变化后的值
-  state.app = payload.app;   // state 表示暴露的rootState 初始数据  payLoad为actions 变化后的值
-
-  // console.log(state, payload);
+export default {
+  state,
+  mutations,
+  getters
 }

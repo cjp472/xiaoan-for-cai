@@ -1,4 +1,4 @@
-let protocol = document.location.protocol == 'https:' ? 'https:' : 'http:'
+const protocol = document.location.protocol == 'https:' ? 'https:' : 'http:'
 const HOSTS = {
   development: {
     domain: protocol + '//test.in-hope.com.cn/v1/'
@@ -26,11 +26,11 @@ export default {
     getMyCollect: HOST.domain + 'favourite/getfavourite' // 获取用户收藏夹信息
   },
   rule: {
-    autoComplete: HOST.domain + 'lawsearch/autocomplete',
+    autoComplete: HOST.domain + 'law/autoComplete',
     getalllmappingrules: HOST.domain + 'lawsearch/getallmappingrules',
     getHotSearch: HOST.domain + 'getHotSearch',
-    getDetails: HOST.domain + 'lawdetail/getdetails',
-    lawSearch: HOST.domain + 'lawsearch/search'
+    getDetails: HOST.domain + 'law/getDetails',
+    lawSearch: HOST.domain + "law/search"
   },
   affiche: {
     autoComplete: HOST.domain + 'common/autoComplete',
@@ -43,4 +43,5 @@ export default {
   /**
    * window api 获取数据
    * */
+
 }

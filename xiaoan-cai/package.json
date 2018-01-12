@@ -1,11 +1,12 @@
 {
-  "name": "xiaoan-cai",
+  "name": "xiaoan",
   "version": "1.0.0",
-  "description": "A Vue.js project",
+  "description": "xiaoan Vue.js project",
   "author": "caiwendi <caiwendi88@gmail.com>",
   "private": true,
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
+    "analyz": "NODE_ENV=production npm_config_report=true npm run build",
     "start": "npm run dev",
     "unit": "jest --config test/unit/jest.conf.js --coverage",
     "e2e": "node test/e2e/runner.js",
@@ -34,6 +35,7 @@
     "babel-eslint": "^7.1.1",
     "babel-jest": "^21.0.2",
     "babel-loader": "^7.1.1",
+    "babel-plugin-component": "^0.10.1",
     "babel-plugin-dynamic-import-node": "^1.2.0",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
     "babel-plugin-transform-runtime": "^6.22.0",
@@ -61,6 +63,7 @@
     "html-webpack-plugin": "^2.30.1",
     "jest": "^21.2.0",
     "jest-serializer-vue": "^0.3.0",
+    "lib-flexible": "^0.3.2",
     "nightwatch": "^0.9.12",
     "node-notifier": "^5.1.2",
     "node-sass": "^4.7.2",
@@ -75,12 +78,12 @@
     "selenium-server": "^3.0.1",
     "semver": "^5.3.0",
     "shelljs": "^0.7.6",
-    "uglifyjs-webpack-plugin": "^1.1.1",
     "url-loader": "^0.5.8",
     "vue-jest": "^1.0.2",
     "vue-loader": "^13.3.0",
     "vue-style-loader": "^3.0.1",
     "vue-template-compiler": "^2.5.2",
+    "vux-loader": "^1.1.27",
     "webpack": "^3.6.0",
     "webpack-bundle-analyzer": "^2.9.0",
     "webpack-dev-server": "^2.9.1",
@@ -92,7 +95,8 @@
   },
   "browserslist": [
     "> 1%",
-    "last 2 versions",
+    "iOS >= 7",
+    "Android >= 4.1",
     "not ie <= 8"
   ]
 }

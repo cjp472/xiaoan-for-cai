@@ -1,80 +1,137 @@
 <template>
-  <transition name="bounce">
-    <div class="lawSearch" id="lawSearch" ref="lawSearch">
-      <div class="xa-search" ref="xaSearch">
-        <form action="">
-          <label for="">
-            <input autofocus type="search" placeholder="placeholder" @focus="searchFocus"
-                   @blur="searchBlur" v-model="keys" @input="searchInput" @keyup.13="searchList"/>
-            <transition name="bounce">
-              <i class="icon iconfont icon-X" @click="closeInput" v-show="iconX"></i>
-            </transition>
-          </label>
-          <i class="icon iconfont icon-tripsousuo"></i>
-        </form>
-      </div>
-      <div class="xa-content" v-show="xaContent" :style="{height:heightT}">
-        <div class="xa-History">
-          <p class="history-title">
-            <span class="ac"><i></i><span>最近搜索</span></span>
-            <span class="as">清除</span>
-          </p>
-          <p class="history-button">
-            <button v-for="(list,index) in buttonHistory" @click="buttonClick('history',index)">{{list}}</button>
-          </p>
+  <div class="lawSearch" id="lawSearch" ref="lawSearch">
+    <div class="xa-search" ref="xaSearch">
+      <form action="" onsubmit=" return false">
+        <div class="xa-input">
+          <input ref="inputDom" @click="inputClick" type="text" v-model.trim="keys" @keyup.13="goLink()"
+                 :placeholder="placeholder"/>
+          <i class="icon iconfont icon-X" v-show="keys.length != 0" @click="clearVal()"></i>
         </div>
-        <div class="xa-dseOver">
-          <p class="history-title">
-            <span class="ac"><i></i><span>最近搜索</span></span>
-            <span class="as" @click="getHotSearch()">换一批</span>
-          </p>
-          <p class="history-button">
-            <button v-for="(list,index) in buttonDseOver" @click="buttonClick('dseOver',index)">{{list}}</button>
-          </p>
-        </div>
-        <transition name="bounce">
-          <div class="xa-autoCom" v-show="xaAutoCom">
-            <ul>
-              <li v-for="(list,index) in buttonText"><p>{{list}}</p></li>
-            </ul>
-          </div>
-        </transition>
-      </div>
+      </form>
     </div>
-  </transition>
+    <div class="xa-content" v-show="xaContent" :style="{height:heightT+'px'}">
+      <div class="xa-History">
+        <p class="history-title">
+          <span class="ac"><i></i><span>最近搜索</span></span>
+          <span class="as"><span @click="removeHistory">清除<i class="icon iconfont icon-shanchu"></i></span></span>
+        </p>
+        <p class="history-button">
+          <button v-for="(list,index) in buttonHistory" @click="buttonClick('history',index)">{{list}}</button>
+        </p>
+      </div>
+      <div class="xa-dseOver">
+        <p class="history-title">
+          <span class="ac"><i></i><span>最近搜索</span></span>
+          <span class="as"><span @click="getHotSearch()">换一批<i class="icon iconfont icon-huanyipi2"></i></span></span>
+        </p>
+        <p class="history-button">
+          <button v-for="(list,index) in buttonDseOver" @click="buttonClick('dseOver',index)">{{list}}</button>
+        </p>
+      </div>
+      <transition name="bounce">
+        <div class="xa-autoCom" v-show="xaAutoCom">
+          <ul>
+            <li v-for="(list,index) in buttonText"><p>{{list}}</p></li>
+          </ul>
+        </div>
+      </transition>
+    </div>
+  </div>
 </template>
 
 <script>
+  import XButton from "vux/src/components/x-button/index";
+  import {Search, Toast} from 'vux'
+
   export default {
+    components: {
+      XButton, Search, Toast
+    },
     name: "law-search",
     data() {
       return {
-        keys: '',
         iconX: false,
         xaContent: true,
         heightT: '',
-        buttonDseOver: ["上市公司与私募基金合作", "异常波动", "员工持股", "公司债券", "高比例送转", "扶贫工作", "优先股", "独立董事", "证券发行"],
-        buttonHistory: ["上市公司与私募基金合作", "异常波动", "员工持股", "公司债券", "高比例送转", "扶贫工作", "优先股", "独立董事", "证券发行"],
+        buttonDseOver: [],
+        buttonHistory: [],
+        buttonText: [],
         xaAutoCom: false,
-        buttonText: '',
-        dataAjax: []
+        dataAjax: [],
+        results: [],
+        keys: '',
+        placeholder: "搜索法规名称，多个关键字空格隔开"
       }
     },
     created() {
       this.getHotSearch();
+      this.$nextTick(() => {
+        this.buttonHistory = this.$storage.getLocalStorage('lawHistory');
+        console.log('123', this.buttonHistory);
+      })
+    },
+    activated() {
+      this.getHotSearch();
+      this.$nextTick(() => {
+        this.buttonHistory = this.$storage.getLocalStorage('lawHistory');
+        console.log('123', this.buttonHistory);
+      });
+      setTimeout(() => {
+        this.$refs.inputDom.focus();
+      }, 1000)
     },
     mounted() {
       /*
       * dom 处理在 mounted方法中
       * */
-      this.heightT = (this.$refs.lawSearch.clientHeight - this.$refs.xaSearch.clientHeight) + "px";
-      setTimeout(() => {
-        this.$nextTick(() => {
-          document.querySelector('input').focus();
-        })
-      }, 300);
+      this.$nextTick(() => {
+        this.heightT = (this.$refs.lawSearch.clientHeight - this.$refs.xaSearch.clientHeight);
+        setTimeout(() => {
+          this.$nextTick(() => {
+            this.$refs.inputDom.focus();
+          })
+        }, 1300);
+      });
     },
     methods: {
+      clearVal() {
+        this.keys = '';
+        this.$nextTick(() => {
+          this.$refs.inputDom.focus();
+        })
+      },
+      removeHistory() {
+        window.localStorage.removeItem('lawHistory');
+        this.$nextTick(() => {
+          this.buttonHistory = this.$storage.getLocalStorage('lawHistory');
+          console.log('123', this.buttonHistory);
+        })
+      },
+      inputClick() {
+        this.$nextTick(() => {
+          this.$refs.inputDom.focus();
+        })
+      },
+      //
+      setlocalStorage() {
+        let storage = this.$storage.getLocalStorage('lawHistory');
+        storage.unshift(this.keys);
+        storage = this.$array.unique(storage);
+        storage = this.$array.ImpArr(storage);
+        this.$storage.setLocalStorage('lawHistory', storage, false);
+      },
+      //
+      goLink() {
+        if (this.keys.trim()) {
+          this.$nextTick(() => {
+            this.setlocalStorage();
+          });
+          this.$router.push({path: '/lawlist', query: {keys: this.keys}});
+        } else {
+          console.log('没有输入的值');
+        }
+      },
+      //
       buttonClick(key, index) {
         if (key == 'history') {
           this.keys = this.buttonHistory[index];
@@ -84,6 +141,7 @@
 
         }
       },
+      //
       getHotSearch() {
         this.$http({
           method: 'GET',
@@ -91,27 +149,10 @@
           params: {}
         }).then((res) => {
           if (res.data.returnCode == 1) {
-            this.buttonText = res.data.returnObject;
+            this.buttonDseOver = res.data.returnObject;
           }
         }).catch((err) => {
         })
-      },
-      searchBlur() {
-        this.iconX = false;
-      },
-      searchInput() {
-
-      },
-      searchFocus() {
-        setTimeout(() => {
-          this.iconX = true;
-        }, 400);
-      },
-      searchList() {
-
-      },
-      closeInput() {
-
       }
     }
   }
@@ -124,73 +165,56 @@
     box-sizing: border-box;
     width: 100%;
     height: 100%;
+    background: white;
     .xa-search {
-      height: 100px;
+      height: 44px;
       width: 100%;
       box-sizing: border-box;
       background-color: #f0f1f5;
+      overflow: hidden;
+      position: relative;
       form {
+        font-size: 0;
         height: 100%;
-        box-sizing: border-box;
-        padding: 15px 15px;
-        position: relative;
-        white-space: nowrap;
-        label {
+        width: 100%;
+        padding: 7.5px 12px;
+        .xa-input {
+          height: 100%;
+          width: 100%;
           position: relative;
           input {
-            width: 89%;
-            height: 100%;
-            background: #fff;
-            padding: 0 12px;
-            box-sizing: border-box;
-            font-size: 30px;
-            color: #8d8d8d;
-            -webkit-transition: width 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
-            transition: width 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
-          }
-          input:focus {
             width: 100%;
-            -webkit-transition: width 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
-            transition: width 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
-          }
-          .icon-X {
-            font-size: 30px;
-            position: absolute;
-            right: 24px;
-            top: 50%;
-            transform: translateY(-50%); /*向左向上分别平移自身的一半*/
-            -webkit-transform: translateY(-50%);
-            -moz-transform: translateY(-50%);
-            color: #8d8d8d;
+            height: 100%;
             background-color: white;
+            font-size: 15px;
+            color: #545454;
+            padding: 0 28px 0 7.5px;
+          }
+          i {
+            font-size: 15px;
+            line-height: 1;
+            position: absolute;
+            color: rgba(0, 0, 0, 0.5);
+            right: 7.5px;
+            top: 50%;
+            transform: translateY(-50%);
           }
         }
-        .icon-tripsousuo {
-          display: inline-block;
-          font-size: 53px;
-          margin-left: 20px;
-          position: absolute;
-          top: 50%;
-          transform: translateY(-50%); /*向左向上分别平移自身的一半*/
-          -webkit-transform: translateY(-50%);
-          -moz-transform: translateY(-50%);
-        }
-
       }
     }
     .xa-content {
       height: auto;
       position: relative;
       .xa-History, .xa-dseOver {
-        padding: 20px 15px;
+        padding: 10px 12px;
         .history-title {
           display: table;
           width: 100%;
-          height: 100px;
+          height: 50px;
           box-sizing: border-box;
           font-size: 0;
           .ac {
-            font-size: 30px;
+            font-size: 15px;
             height: 100%;
             display: table-cell;
             color: #ffb148;
@@ -200,17 +224,17 @@
               font-size: 0;
               display: inline-block;
               height: 29%;
-              width: 6px;
+              width: 3px;
               background-color: #ffb148;
               float: left;
-              margin-right: 6px;
+              margin-right: 3px;
             }
             span {
               display: inline-block;
             }
           }
           .as {
-            font-size: 30px;
+            font-size: 15px;
             height: 100%;
             line-height: 1;
             display: table-cell;
@@ -227,20 +251,29 @@
           }
         }
         .history-button {
-          min-height: 250px;
-          max-height: 250px;
+          min-height: 110px;
+          max-height: 110px;
           width: 100%;
           overflow: hidden;
           button {
+            font-size: 15px;
             border: 1px solid #e3e3e3;
-            height: 60px;
+            -webkit-transform: scale(1);
+            transform: scale(1);
+            -webkit-transform-origin: 0 0;
+            transform-origin: 0 0;
+            -webkit-box-sizing: border-box;
             box-sizing: border-box;
-            padding: 0 20px;
-            border-radius: 4px;
+            height: 30px;
+            padding: 0 10px;
+            border-radius: 2px;
             color: #8d8d8d;
             background-color: white;
-            margin: 0 30px 20px 0;
+            margin: 0 15px 10px 0;
             outline: none;
+          }
+          button:last-child {
+            margin-right: 0;
           }
           button:active {
             background-color: #f0f1f5;
@@ -269,13 +302,13 @@
           box-shadow: 0 0 1px white;
           li {
             outline: none;
-            font-size: 30px;
+            font-size: 15px;
             color: #8d8d8d;
-            padding: 0 15px;
+            padding: 0 12px;
             -webkit-transition: background-color 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
             transition: background-color 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
             p {
-              padding: 15px 0;
+              padding: 7.5px 0;
               border-bottom: 1px solid #f0f1f5;
               -webkit-transition: border-bottom 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
               transition: border-bottom 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);

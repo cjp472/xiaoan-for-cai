@@ -1,5 +1,5 @@
 export default {
-  unique(arr) { // 数组去重
+  unique(arr) { //  数组去重
     var result = [];
     var obj = {};
     for (let i = 0; i < arr.length; i++) {
@@ -22,8 +22,8 @@ export default {
       }
     }
   },
-  // 存入localStorage //key==value==排序 value是数组【["","",""]】
-  localStorageSystem(storageName, storageContent, status) {
+  // 存入localStorage // key==value==status(排序) value是数组【["","",""]】
+  setLocalStorage(storageName, storageContent, status) {
     window.localStorage.removeItem(storageName);// 先清空数据
     for (let i in storageContent) {
       if (window.localStorage.getItem(storageName) !== null) {
@@ -35,7 +35,7 @@ export default {
       }
     }
   },
-  localStorageAll(storageName) {
+  getLocalStorage(storageName) {
     let read = [];
     if (window.localStorage.getItem(storageName) === null) {
       // 没有localStorage的情况
@@ -45,12 +45,12 @@ export default {
     }
     return read
   },
-  localStorageRemove(array) {
+  removeLocalStorage(array) {
     for (let i in array) {
       window.localStorage.removeItem(array[i]);
     }
   },
-  // 存入sessionStorage //key==value==排序
+  // 存入sessionStorage // key==value==排序
   sessionStorageSystem(storageName, storageContent, status) {
     if (window.sessionStorage.getItem(storageName) !== null) {
       let read = window.JSON.parse(window.sessionStorage.getItem(storageName));// 读取数组
@@ -72,12 +72,13 @@ export default {
   },
   // 鉴定是否注册登陆 保存sessionStorage
   loginStatus(that, title, url, goTo) {
+    // document.querySelector("input").blur();
     let addTo = goTo;
     (addTo) ? addTo = goTo : addTo = 'number';
-    window.sessionStorage.setItem('refer_title', title);
-    window.sessionStorage.setItem('refer_url', url);
+    window.sessionStorage.setItem("refer_title", title);
+    window.sessionStorage.setItem("refer_url", url);
     setTimeout(() => {
-      that.$router.push({path: '/' + addTo, query: {MathTime: Math.random()}});
+      that.$router.replace({path: "/" + goTo, query: {MathTime: global.timestamp}});
     }, 500)
   }
 }

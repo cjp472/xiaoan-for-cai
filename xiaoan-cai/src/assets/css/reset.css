@@ -4,10 +4,10 @@
   box-sizing: border-box;
 }
 html {
-  /*font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;*/
-  font-family: PingFang SC, sans-serif;
+  font-family: PingFangSC-Regular, sans-serif, Microsoft Yahei, Helvetica;
   -ms-text-size-adjust: 100%;
-  -webkit-text-size-adjust: 100%
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 html, body {
   margin: 0;
@@ -15,9 +15,12 @@ html, body {
   background-color: #fff;
   width: 100%;
   height: 100%;
+  font-size: 24px;
   min-width: auto;
   min-height: auto;
   color: #323232;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }
 article, aside, details, figcaption, figure, footer, header, hgroup, main, menu, nav, section, summary {
   display: block
@@ -95,7 +98,8 @@ button, input, optgroup, select, textarea {
   margin: 0
 }
 button {
-  overflow: visible
+  overflow: visible;
+  font-size: 30px;
 }
 button, select {
   text-transform: none
@@ -110,6 +114,9 @@ button[disabled], html input[disabled] {
 button::-moz-focus-inner, input::-moz-focus-inner {
   border: 0;
   padding: 0
+}
+form {
+  font-size: 0;
 }
 input {
   line-height: normal;
@@ -225,15 +232,9 @@ a:active, a:hover {
   display: inline-block;
   margin: 0 5px;
 }
-*::-moz-selection {
-  background: #f0f1f5;
-  color: #FFF;
-}
-*::selection {
-  background: #f0f1f5;
-  color: #FFF;
-}
+*::selection { background: #FFF; color: #333; }
+*::-moz-selection { background: #FFF; color: #333; }
+*::-webkit-selection { background: #FFF; color: #333;}
 *:active {
   background: rgba(0, 0, 0, 0);
-  color: #8d8d8d;
 }

@@ -1,9 +1,7 @@
 <template>
-  <transition name="bounce">
-    <div id="my">
+  <div id="my">
 
-    </div>
-  </transition>
+  </div>
 </template>
 
 <script>

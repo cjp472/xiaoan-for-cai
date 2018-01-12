@@ -1,46 +1,36 @@
 <template>
-  <transition name="bounce">
-    <div id="law">
-      <div class="logo">
-        <img v-lazy="bgImg" alt="">
+  <div id="law">
+    <div class="logo">
+      <img :src="bgImg" alt="">
+    </div>
+    <div class="search" @click="indexTo('/lawsearch')">
+      <div class="searchVal">搜索法规名称</div>
+    </div>
+    <div class="law-slo">
+      <div>董秘智能移动工具，触手可及</div>
+    </div>
+    <div class="link">
+      <div class="linkitem" @click="indexTo('/lawlates')">
+        <img :src="newImg" alt="newrule">
+        <p>新规</p>
       </div>
-      <div class="search" @click="indexTo('search')">
-        <div class="searchVal">搜索法规名称</div>
+      <div class="linkitem" @click="indexTo('new')">
+        <img :src="adsImg" alt="footer">
+        <p>精选</p>
       </div>
-      <div class="law-slo">
-        <div>董秘智能移动工具，触手可及</div>
+      <div class="linkitem" @click="indexTo('new')">
+        <img :src="mokaoImg" alt="roadShow">
+        <p>模考</p>
       </div>
-      <div class="link">
-        <div class="linkitem">
-          <div class="aa" @click="indexTo('new')">
-            <img :src="newImg" alt="newrule">
-            <p>新规</p>
-          </div>
-          <div class="GuidePages" v-show="GuidePages">
-            <div class="GuidePage">点击查看最新法规</div>
-            <img :src="GuidePagesLow" alt="">
-          </div>
-        </div>
-        <div class="linkitem ads" @click="indexTo('new')">
-          <img :src="adsImg" alt="footer">
-          <p>精选</p>
-        </div>
-        <div class="linkitem" @click="indexTo('new')">
-          <img :src="mokaoImg" alt="roadShow">
-          <p>模考</p>
-          <img :src="newIcon" alt="new" id="newTip">
-        </div>
-
-        <div class="linkitem ads" @click="indexTo('new')">
-          <img :src="schoolImg" alt="footer" id="adsidImg">
-          <p>学院</p>
-        </div>
-      </div>
-      <div class="law-show" v-show="GuidePages">
-        <button class="law-show-sh" @click="lawshowsh">知道了</button>
+      <div class="linkitem" @click="indexTo('new')">
+        <img :src="schoolImg" alt="footer" id="adsidImg">
+        <p>学院</p>
       </div>
     </div>
-  </transition>
+    <div class="law-show" v-show="GuidePages">
+      <button class="law-show-sh" @click="lawshowsh">知道了</button>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -50,7 +40,7 @@
     name: "law",
     data() {
       return {
-        GuidePages: true,
+        GuidePages: false,
         GuidePagesLow: "",
         bgImg: lawBaseSvg.law[0].img,
         collectImg: lawBaseSvg.law[1].img,
@@ -69,46 +59,19 @@
     },
     watch: {},
     created() {
-      if (window.localStorage.getItem('lawGuidePages')) {
-        this.GuidePages = false;
-      } else {
-        this.GuidePages = true;
-      }
       // 每次打开页面只执行一次。
-      document.title = "信公小安";
-      this.$nextTick(() => {
-        window.sessionStorage.clear();
-        let local = ["guizeIdStatus", "value2", "marketIdStatus", "value0",
-          "adsActive", "fawenIdStatus", "value1", "titleIME", "contentIME",
-          "keyIME", "colorBtn", "BtnMany", "DateStartEnd", "timeIdStatus"
-        ];
-        // this.$storage.localStorageRemove(local);
-      });
+      // document.title = "信公小安";
     },
     mounted() {
-      if (this.$cookie.get()) {
-        this.isOnload = false;//  未授权登录
-      } else {
-        this.isOnload = true;//  授权登录
-        if (window.localStorage.getItem("wixAccreditCode") == null || window.localStorage.getItem("wixAccreditCode") == undefined) {
-          window.localStorage.setItem("wixAccreditCode", 'true');
-          //   window.location.href = global.wixAccreditLaw; // 小安 cai 11：27 ===》20：11
-        }
-      }
     },
     methods: {
       lawshowsh() {
         window.localStorage.setItem('lawGuidePages', false);
         this.GuidePages = false;
       },
-      indexTo(index) {
-        console.log('index', index);
-        if (index == 'search') {
-          this.$router.push({path: '/lawSearch', query: {}});
-
-        } else if (index == 'new') {
-
-        }
+      indexTo(path) {
+        console.log('index', path);
+        this.$router.push({path: path});
       }
     }
 
@@ -122,36 +85,36 @@
     background-color: #fff;
     .logo {
       width: 100%;
-      height: 470px;
-      padding: 128px 0 50px 0;
+      height: 235px;
+      padding: 64px 0 25px 0;
       box-sizing: border-box;
       img {
         display: block;
         height: 100%;
-        padding-left: 50px;
+        padding-left: 25px;
       }
     }
     .search {
       width: 100%;
-      height: 90px;
-      padding: 0 50px;
+      height: 45px;
+      padding: 0 25px;
       box-sizing: border-box;
       position: relative;
       .searchVal {
-        height: 90px;
+        height: 45px;
         border: 1px solid #cbcbcb;
         color: #cbcbcb;
-        border-radius: 4px;
-        line-height: 88px;
-        padding-left: 30px;
-        font-size: 30px;
+        border-radius: 2px;
+        line-height: 44px;
+        padding-left: 15px;
+        font-size: 15px;
       }
     }
     .law-slo {
-      font-size: 24px;
+      font-size: 12px;
       color: #e3e3e3;
       font-family: PingFangSC-Regular, sans-serif, Microsoft Yahei, Helvetica;
-      padding: 0 48px;
+      padding: 0 24px;
       display: none;
     }
     .law-show {
@@ -164,30 +127,32 @@
       background-color: rgba(0, 0, 0, 0.75);
       z-index: 3000;
       .law-show-sh {
-        height: 65px;
+        height: 32.5px;
         width: 200px;
         background-color: rgba(0, 0, 0, 0.01);
         color: #ffb148;
-        border-radius: 4px;
-        font-size: 30px;
+        border-radius: 2px;
+        font-size: 15px;
         position: absolute;
         bottom: 17%;
         left: 50%;
-        margin-left: -100px;
+        margin-left: -50px;
         text-align: center;
-        line-height: 65px;
+        line-height: 32.5px;
         border: 1px dashed #ffb148;
       }
     }
     .link {
       width: 80%;
-      height: 200px;
+      height: auto;
       font-size: 0;
       margin: 0 auto;
-      padding-top: 108px;
+      padding-top: 54px;
       box-sizing: border-box;
+      display: flex;
       .linkitem {
-        width: 25%; /* 精选栏目 */
+        flex: 1;
+        // width: 25%; /* 精选栏目 */
         /* width:33.333%;*/
         height: auto;
         display: inline-block;
@@ -195,22 +160,22 @@
         position: relative;
         img, .aa img {
           display: block;
-          height: 50px;
-          margin: 0 auto 20px;
+          height: 25px;
+          margin: 0 auto 10px;
           overflow: hidden;
         }
         p {
           margin: 0;
           width: 100%;
-          font-size: 26px;
+          font-size: 13px;
           color: #b1b1b1;
           text-align: center;
         }
         #newTip {
-          height: 28px;
+          height: 14px;
           position: absolute;
-          top: -28px;
-          right: 4px;
+          top: -14px;
+          right: 2px;
           width: auto;
         }
       }
@@ -218,20 +183,20 @@
   }
   #law .GuidePages {
     position: relative;
-    top: -225px;
-    left: 8px;
+    top: -112.5px;
+    left: 4px;
     z-index: 1007;
   }
   #law .GuidePage {
     position: absolute;
-    top: -27px;
-    left: -35px;
+    top: -13.5px;
+    left: -17.5px;
     width: 358%;
     color: white;
-    font-size: 18px;
+    font-size: 9px;
   }
   #law .GuidePages img {
-    height: 234px;
+    height: 117px;
   }
   .bounce-enter-active {
     animation: bounce-in .4s;

@@ -1,4 +1,6 @@
-import cookies from 'js-cookie'
+// import cookies from 'js-cookie'
+
+const cookies = () => import('js-cookie')
 
 export default {
   get(name) {
