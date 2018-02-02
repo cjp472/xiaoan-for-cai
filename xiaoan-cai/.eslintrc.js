@@ -8,6 +8,7 @@ module.exports = {
   },
   env: {
     browser: true,
+    jquery: true
   },
   // https://github.com/standard/standard/blob/master/docs/RULES-en.md
   extends: 'standard',
@@ -47,7 +48,7 @@ module.exports = {
     'quotes': 0,
     'camelcase': 0,
     'no-undef': 0,
-    'object-property-newline':0,
+    'object-property-newline': 0,
     'eqeqeq': 0
   }
 }

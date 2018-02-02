@@ -2,40 +2,63 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import App from './App'
-import router from './router'
+import api from '@/common/host'
+import router from './router/index'
 import store from './store/index'
-import Http from '@/service/http'
-import Regx from '@/service/regx'
-import Cookie from '@/service/cookie'
-import storage from '@/service/storage'
-import array from '@/service/array'
-import constant from '@/service/constant'
-import Api from '@/service/api'
-import md5 from 'js-md5'
-import common from '@/service/common'
-import VueUI from '@/service/vueui'
-/* 引入移动端手势库 */
-import directives from '@/directives/touch'
-directives(Vue);
-Vue.use(VueUI);
+import Http from './common/http'
+import VIEWUI from './common/viewUI'
+import FastClick from 'fastclick'
+// 封装方法
+import weixin from './common/weixin'
+import cookie from './common/cookie'
+import constant from './common/constant'
+import array from './common/array'
+import storage from './common/storage'
+import MTAmethod from './common/MTAmethod'
+import ybstore from './common/YBstore'
+import share from './common/share'
+import 'lib-flexible' // 移动端rem编译
 
-const Base64 = require('js-base64').Base64
-Vue.prototype.$md5 = md5
-Vue.prototype.$http = Http(Vue)
-Vue.prototype.$regx = Regx
-Vue.prototype.$cookie = Cookie
-Vue.prototype.$const = constant
-Vue.prototype.$storage = storage
-Vue.prototype.$array = array
-Vue.prototype.$api = Api
-Vue.prototype.$common = common
+Vue.use(VIEWUI)
 
-const fundebug = require("fundebug-javascript");
-fundebug.apikey = "1e4eebbb02b9eeedfd5864097477eaad2c38b0028c8340f751bec4afd52e64b5"
-
-const FastClick = require('fastclick')
 FastClick.attach(document.body)
-/**/
+
+// require("lrz/dist/lrz.bundle.js") // 图片压缩工具
+
+Vue.prototype.$weixin = weixin;
+Vue.prototype.$api = api;
+Vue.prototype.$cookie = cookie;
+Vue.prototype.$http = Http(Vue, cookie)
+Vue.prototype.$const = constant;
+Vue.prototype.$array = array;
+Vue.prototype.$storage = storage;
+Vue.prototype.$MTAmethod = MTAmethod;
+Vue.prototype.$YBstore = ybstore;
+Vue.prototype.$share = share;
+
+// const VueTouch = require('vue-touch');
+// Vue.use(VueTouch, {name: 'v-touch'});
+
+// 本地环境，测试环境,预发布环境添加log
+// process.env.NODE_ENV === 'dev' ||  testing => 信安测试  pre => 董办助手
+// fundebug 监控
+if (process.env.NODE_ENV === 'dev') {
+} else {
+  // const fundebug = require("fundebug-javascript");
+  // fundebug.apikey = "48e2830bba8a9cfdd4d7153a73c99e35df660ea99cfb1dd1ff5955cd7274815e";
+}
+if (process.env.NODE_ENV === 'testing' || process.env.NODE_ENV === 'pre') {
+  const opt = {
+    'logExtJs': '/static/log/log_ext.js',
+    'logExtCss': '/static/log/log.css'
+  };
+  window.MLogger.init(opt);
+} else if (process.env.NODE_ENV === 'product') {
+  // const fundebug = require("fundebug-javascript");
+  // fundebug.apikey = "0fc7d055cad641fe5a7b23e937431e773bc1d5d2b9904cbc9ed7119aef8edc0b";
+}
+// Axios.defaults.withCredentials = true;
+//
 const history = window.sessionStorage;
 // history.clear();
 let historyCount = history.getItem('count') * 1;
@@ -68,11 +91,13 @@ router.beforeEach((to, from, next) => {
 router.afterEach(function (to) {
   setTimeout(() => {
     store.commit('UPDATE_LOADING', {isLoading: false})
-  }, 700)
+  }, 500)
 })
+//
+Vue.config.productionTip = false; // 生产环境关闭提示
 
-Vue.config.productionTip = false;
-/* eslint-disable no-new */
+// Vue.config.silent = true;//输出日志
+// *eslint-disable no-new */
 new Vue({
   // el: '#app',
   router,
