@@ -137,7 +137,7 @@
           } else {
             this.values = this.$route.query.valuess;
           }
-          document.querySelector('.closeInputVals').style.display = 'block';
+           document.querySelector('.closeInputVals').style.display = 'block';
         }
         if (this.$route.query.code !== undefined) {
           this.SIMvalues = this.$route.query.code;
@@ -149,11 +149,7 @@
         console.log(window.localStorage.getItem('HistorySearchA'));
         if (window.localStorage.getItem('HistorySearchA') === null) {
           // 没有localStorage的情况
-          document.querySelector('.HistoryS').style.display = 'block';
-          document.querySelector('.dseMixHeight').style.display = 'none';
         } else {
-          document.querySelector('.dseMixHeight').style.display = 'block';
-          document.querySelector('.HistoryS').style.display = 'none';
           let read = window.JSON.parse(window.localStorage.getItem('HistorySearchA')); // 读取数组
           this.defaultResult = read;
           for (let i = 0; i < read.length; i++) {
@@ -168,9 +164,12 @@
       },
       // 获取热门推荐
       hotResults() {
-        document.querySelector('.showBox').style.display = 'block';
-        this.$http.get(this.$api.host + 'disclosure/getHotSearch').then((res) => {
-          document.querySelector('.showBox').style.display = 'none';
+       // document.querySelector('.showBox').style.display = 'block';
+        this.$http({
+          method: 'GET',
+          url: this.$api.host + 'disclosure/getHotSearch',
+          params: {}
+        }).then((res) => {
           this.hotResult = res.data;
         }).catch((err) => {
           console.log(err)
@@ -179,7 +178,7 @@
       // localStorage方法
       localStorageSystem(storage) {
         if (window.localStorage.getItem('HistorySearchA') !== null) {
-          let read = window.JSON.parse(window.localStorage.getItem('HistorySearchA'));//读取数组
+          let read = window.JSON.parse(window.localStorage.getItem('HistorySearchA')); // 读取数组
           read.unshift(storage);
           console.log(read);
 
@@ -243,8 +242,8 @@
       // 搜索.get("")
       searchInput() {
         if (this.values.trim().length === 0) {
-          document.querySelector('.closeInputVals').style.display = 'none';
-          document.querySelector('.prestrain').style.display = 'none';
+         // document.querySelector('.closeInputVals').style.display = 'none';
+         // document.querySelector('.prestrain').style.display = 'none';
         } else {
           // 搜索公告名称关键字autocomplete
         }
@@ -261,7 +260,7 @@
           $(".closeInputVals1").hide();
         } else {
           this.SIMvalues = removeAllSpace(this.SIMvalues);
-          document.querySelector('.closeInputVals1').style.display = 'block';
+          // document.querySelector('.closeInputVals1').style.display = 'block';
           $(".closeInputVals1").show();
           $(".codeTip").show();
           this.$http({
@@ -312,8 +311,8 @@
       searchBlur() {
         if (this.values.length === 0) {
           this.values = "";
-          document.querySelector('.groupDsearch').style.display = 'block';
-          document.querySelector('.prestrain').style.display = 'none';
+         // document.querySelector('.groupDsearch').style.display = 'block';
+         // document.querySelector('.prestrain').style.display = 'none';
         }
       },
       // 搜索的预提示
@@ -332,7 +331,7 @@
       dseClear() {
         window.localStorage.removeItem("HistorySearchA");
         this.Newarr = [];
-        document.querySelector('.HistoryS').style.display = "block";
+       // document.querySelector('.HistoryS').style.display = "block";
       },
       // 点击换一换
       InABatchS() {
@@ -362,16 +361,16 @@
       // input清除按钮
       closeInputVals() {
         this.values = '';
-        document.querySelector('.closeInputVals').style.display = 'none';
-        document.querySelector('.prestrain').style.display = 'none';
-        document.querySelector('#ipvtext').focus();
+       // document.querySelector('.closeInputVals').style.display = 'none';
+       // document.querySelector('.prestrain').style.display = 'none';
+       // document.querySelector('#ipvtext').focus();
       },
       //
       closeInputVals1() {
         this.SIMvalues = '';
-        document.querySelector('.closeInputVals1').style.display = 'none';
-        document.querySelector('.prestrain').style.display = 'none';
-        document.querySelector('#simple').focus();
+       // document.querySelector('.closeInputVals1').style.display = 'none';
+       // document.querySelector('.prestrain').style.display = 'none';
+       // document.querySelector('#simple').focus();
         $(".codeTip").hide();
       }
     }

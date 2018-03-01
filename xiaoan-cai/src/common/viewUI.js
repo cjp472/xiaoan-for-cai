@@ -1,6 +1,7 @@
 // 项目引用的 UI控件
 import '@/assets/iconfont/iconfont.css'
 import '@/assets/css/reset.css'
+import '@/assets/css/common.css'
 import MintUI from 'xiaoan-mint-ui'
 import 'xiaoan-mint-ui/lib/style.css'
 import VueAwesomeSwiper from 'vue-awesome-swiper'

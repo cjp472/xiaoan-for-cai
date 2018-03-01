@@ -117,6 +117,17 @@
   }
 </script>
 <style lang="scss">
+  body, html{
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+    font-family: PingFangSC-Regular, sans-serif, Microsoft Yahei, Helvetica;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  }
   .mint-msgbox-wrapper {
     .mint-msgbox {
       color: #323232 !important;
@@ -171,7 +182,9 @@
   .vux-loading {
     .weui-toast {
       top: 50%;
-      // transform: translate3d(-50%, -50%, 0);
+    }
+    .weui-icon_toast.weui-loading {
+      margin: 20px 0 0;
     }
   }
   .vux-header.v-transfer-dom {
@@ -180,7 +193,6 @@
     position: fixed !important;
     top: 0;
     left: 0;
-    // background-color: #ffbc61 !important;
   }
   #app {
     width: 100%;

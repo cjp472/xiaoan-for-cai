@@ -1,5 +1,5 @@
 <template>
-  <footer class="xa-Footer">
+  <footer class="xa-Footer" ref="tabbarDom">
     <tabbar>
       <tabbar-item link="/law" :selected="$route.meta.tabName === 'law'">
         <i slot="icon" class="icon iconfont icon-fagui"></i>
@@ -35,6 +35,12 @@
       Cell
     },
     watch: {},
+    created() {
+
+    },
+    mounted() {
+      this.$style.tabbar.height = this.$refs.tabbarDom.clientHeight;
+    },
     methods: {}
 
   }

@@ -1,6 +1,7 @@
 <template>
   <div class="ruleslist" id="ruleslist" ref="ruleslistDom">
-    <div class="searchs">
+    <!--搜索栏-->
+    <div ref="searchsDom" class="searchs">
       <div class="seabox">
         <div class="searchPrompt" @click="searchPro"></div>
         <ul class="searchScroll">
@@ -12,11 +13,180 @@
           </li>
         </ul>
         <div class="goSearch" @click='goSearch'>
-          <div class="rulesNum" v-show="num>1">{{num+numtext}}</div>
+          <div class="rulesNum" v-show="totalNumber>1">{{totalNumber+numtext}}</div>
         </div>
       </div>
       <button @click="popupShow" class="expert_s" id="experts">{{experts}}</button>
       <i class="smx_item" v-show="redCircleExpert"></i>
+    </div>
+    <!--筛选栏-->
+    <div ref="searchBoxDom" class="searchBox">
+      <ul class="search-wrapper">
+        <li class="search-mrpx" v-for="(list, index) in preparationBox" :class="{pass: list.isActive}" v-if="list.show"
+            @click="preparationClick(index)">
+          <span class="search-mrpx-name">{{list.name}}</span>
+          <span class="imgBox">
+            <i class="icon iconfont icon-xiangxiajiantou iconBottom"></i>
+          </span>
+        </li>
+      </ul>
+      <div class="search-sx">
+        <div class="redCircle" v-show="redCircleDis"></div><!--筛选栏选中条件状态标识-->
+        <button @click="preparationPopupClick" class="expert_s">筛选</button>
+        <!--筛选-->
+      </div>
+      <div v-show="searchBoxTrue" class="searchBoxDis"></div>
+    </div>
+    <!----正面 市场类型 筛选条件---->
+    <transition name="bounce">
+      <div class="filter-box" :style="{height:filterBoxHeight+'px'}" v-show="preparationBox[0].isActive">
+        <ul class="item-box">
+          <li class="item-list" v-for="(list,index) in preparationBox[0].select" @click="MRselect(index)">
+            <div class="item-tip" :class="{selected:list.isActive}"></div>
+            <div class="item-Text">{{ list.name }}</div>
+            <div :class="{'item-Hline': index % 2 == 0}"></div>
+          </li>
+          <li class="item-foo" v-if="preparationBox[0].select.length %2 != 0">
+            <div class=""></div>
+            <div class="item-Text"></div>
+            <div></div>
+          </li>
+        </ul>
+        <div class="bottomBox">
+          <button class="reset" @click="screenReset(0)">重置</button>
+          <button class="yeah" @click="screenCertain(0)">确认</button>
+        </div>
+      </div>
+    </transition>
+    <!----正面 发文单位 筛选条件---->
+    <transition name="bounce">
+      <div class="filter-box" :style="{height:filterBoxHeight+'px'}" v-show="preparationBox[1].isActive">
+        <ul class="item-box">
+          <li class="item-list" v-for="(list,index) in preparationBox[1].select" @click="FWselect(index)">
+            <div class="item-tip" :class="{selected:list.isActive}"></div>
+            <div class="item-Text">{{ list.name }}</div>
+            <div :class="{'item-Hline': (index % 2 == 0)}"></div>
+          </li>
+          <li class="item-foo" v-if="preparationBox[1].select.length % 2 != 0">
+            <div class=""></div>
+            <div class="item-Text"></div>
+            <div></div>
+          </li>
+        </ul>
+        <div class="bottomBox">
+          <button class="reset" @click="screenReset(1)">重置</button>
+          <button class="yeah" @click="screenCertain(1)">确认</button>
+        </div>
+      </div>
+    </transition>
+    <!----正面 规则类别 筛选条件---->
+    <transition name="bounce">
+      <div class="filter-box" :style="{height:filterBoxHeight+'px'}" v-show="preparationBox[2].isActive">
+        <ul class="item-box">
+          <li class="item-list" v-for="(list,index) in preparationBox[2].select" @click="GZselect(index)">
+            <div class="item-tip" :class="{selected:list.isActive}"></div>
+            <div class="item-Text">{{ list.name }}</div>
+            <div :class="{'item-Hline': index % 2 == 0}"></div>
+          </li>
+          <li class="item-foo" v-if="preparationBox[2].select.length %2 != 0">
+            <div class=""></div>
+            <div class="item-Text"></div>
+            <div></div>
+          </li>
+        </ul>
+        <div class="bottomBox">
+          <button class="reset" @click="screenReset(2)">重置</button>
+          <button class="yeah" @click="screenCertain(2)">确认</button>
+        </div>
+      </div>
+    </transition>
+    <!--右侧筛选栏-->
+    <div v-transfer-dom>
+      <popup v-model="preparationPopup" position="right" width="61.8%" class="xiaoan-right-popup">
+        <div class="xiaoan-popup-wrapper">
+          <x-header>
+            <span :slot="'overwrite-left'" style="width: 30px;height: 30px;display: inline-block">
+              <i class="icon iconfont icon-x expert_g" @click="preparationPopup = false"></i>
+            </span>
+            <span>筛选</span>
+          </x-header>
+          <!----侧边栏各筛选条件---->
+          <div class="xiaoan-popup-content">
+            <ul class="sxList">
+              <li class="sxitemBox" v-for="(item, k1) in preparationBox">
+                <div class="sxlistItem" @click="preparationListClick(k1)">
+                  <div class="sxlistItem-title">
+                    <div class="sxlistItem-tip">
+                      <span>{{item.name}}</span>
+                    </div>
+                    <div class="sxlistItem-tip">
+                      <span></span>
+                    </div>
+                    <div class="sxlistItem-tip">
+                      <i class="icon iconfont icon-xiangyoujiantou" :class="{'icon-angstrom':item.isRightActive}"></i>
+                    </div>
+                  </div>
+                </div>
+                <ul class="sxList" v-show="item.isRightActive">
+                  <li class="sxitemBox" v-for="(list, k2) in item.select">
+                    <div class="sxlistItem" @click="preparationSelect(k1,k2)">
+                      <div class="listText">{{list.name}}</div>
+                      <div class="sxlistItem-checkbox">
+                        <span class="itemTip" :class="{selected:list.isActive}"></span>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </li>
+              <!---->
+              <li class="sxitemBox">
+                <div class="sxlistItem" @click="showItem(4)">
+                  <div class="sxlistItem-title">
+                    <div class="sxlistItem-tip">
+                      <span>发布日期</span>
+                    </div>
+                    <div class="sxlistItem-tip">
+                      <span></span>
+                    </div>
+                    <div class="sxlistItem-tip">
+                      <i class="icon iconfont icon-xiangyoujiantou"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="itemconBOX" isOpen="close" style="display: none;">
+                  <div class="itemContent">
+                    <div class="itemList">
+                      <div class="listText">起始日期</div>
+                      <div class="inputBox aa">
+                        <input type="date" required min="1991-11-15" :max="todate" v-model="timesDate1"
+                               placeholder="年 / 月 / 日" @change="timeStart">
+                        <b class="closeDate" @click="timesClose1"
+                           v-show="timesDate1 !== ''"><i style="color: #c1c1c1"
+                                                         class="icon iconfont icon-X"></i></b>
+                      </div>
+                    </div>
+                    <div class="itemList">
+                      <div class="listText">结束日期</div>
+                      <div class="inputBox bb">
+                        <input type="date" required :min="timesDate1" :max="todate" v-model="timesDate2"
+                               placeholder="年 / 月 / 日" @change="timeEnd">
+                        <b class="closeDate" @click="timesClose2"
+                           v-show="timesDate2 !== ''"><i style="color: #c1c1c1"
+                                                         class="icon iconfont icon-X"></i></b>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <div class="xiaoan-popup-footer">
+            <!----侧边栏确认重置按钮---->
+            <button class="sxReset">重置</button>
+            <button class="sxYeah">确认</button>
+          </div>
+        </div>
+      </popup>
     </div>
     <!--右滑高级-->
     <mt-popup v-model="popupVisible" :modal="false" position="right" class="mint-popup-3">
@@ -104,182 +274,7 @@
       </div>
       <!---->
     </mt-popup>
-    <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-    <!--筛选栏-->
-    <div class="searchBox">
-      <div class="search-s" style="position: relative">
-        <div class="search-mrpx search1" :class="{pass:xianshi}" @click="show">
-          <span>市场类型</span>
-          <p class="imgBox"><i class="icon iconfont icon-xiangxiajiantou iconBottom"></i></p>
-        </div>
-        <div class="search-mrpx search2" :class="{pass:xianshi1}" @click="show2">
-          <span>发文单位</span>
-          <p class="imgBox"><i class="icon iconfont icon-xiangxiajiantou iconBottom"></i></p>
-        </div>
-        <div class="search-mrpx search3" :class="{pass:xianshi2}" @click="show3">
-          <span>规则类别</span>
-          <p class="imgBox"><i class="icon iconfont icon-xiangxiajiantou iconBottom"></i></p>
-        </div>
-      </div>
-      <div class="search-sx search4">
-        <div class="redCircle" v-show="redCircleDis"></div><!--筛选栏选中条件状态标识-->
-        <button @click="SXshow" class="expert_s">筛选</button>
-        <!--筛选-->
-      </div>
-      <div v-show="searchBoxTrue" class="searchBoxDis"></div>
-    </div>
-    <!----正面 市场类型 筛选条件---->
-    <div class="showSearch" v-show="showSearch">
-      <div class="itembox">
-        <div class="item" @click="MRselect($event)" v-for="list in sxlistItem[0].item">
-          <div class="itemTip aaa" select='true'></div>
-          <div class="itemText bbb">{{ list.name }}</div>
-          <div class="itemHline"></div>
-        </div>
-      </div>
-      <div class="bottomBox">
-        <button class="reset" @click="MRreset($event)">重置</button>
-        <button class="yeah" @click="shaixuanY">确认</button>
-      </div>
-    </div>
-    <!----正面 发文单位 筛选条件---->
-    <div class="showSearch1" v-show="showSearch1">
-      <div class="itembox">
-        <div class="item" @click="select($event)" v-for="list in sxlistItem[1].item">
-          <div class="itemTip aaa" select='true'></div>
-          <div class="itemText bbb">{{ list.name }}</div>
-          <div class="itemHline"></div>
-        </div>
-      </div>
-      <div class="bottomBox">
-        <button class="reset" @click="reset($event)">重置</button>
-        <button class="yeah" @click="shaixuanY">确认</button>
-      </div>
-    </div>
-    <!----正面 规则类别 筛选条件---->
-    <div class="showSearch2" v-show="showSearch2">
-      <div class="itembox">
-        <div class="item" @click="GZselect($event)" v-for="list in sxlistItem[2].item">
-          <div class="itemTip aaa" select='true'></div>
-          <div class="itemText bbb">{{ list.name }}</div>
-          <div class="itemHline"></div>
-        </div>
-      </div>
-      <div class="bottomBox">
-        <button class="reset" @click="GZreset($event)">重置</button>
-        <button class="yeah" @click="shaixuanY">确认</button>
-      </div>
-    </div>
     <!---->
-    <mt-popup v-model="popupVisible1" pop-transition='popup-fade' :modal="false" position="right"
-              class="mint-popup-3">
-      <div class="sxHeader">
-        <i @click="SXhide" class="icon iconfont icon-x expert_g"></i>
-        <div class="sxHeaderText">筛选</div>
-      </div>
-      <div class="sxLists ruleList"><!----侧边栏各筛选条件---->
-        <div class="sxitemBox">
-          <div class="sxlistItem" @click="showItem(0)">
-            <div>市场类型</div>
-            <div class="tipText tip"></div>
-            <i class="icon iconfont icon-xiangyoujiantou toLeft"></i>
-          </div>
-          <div class="itemconBOX" isOpen="close" style="display: none;">
-            <!--max-height: 250px;overflow: scroll-->
-            <div class="itemContent" v-for="list in sxlistItem[0].item">
-              <div class="itemList" @click="MarketSH($event)">
-                <div class="listText">{{ list.name }}</div>
-                <div class="itemTip" select="true"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="sxitemBox">
-          <div class="sxlistItem" @click="showItem(1)">
-            <div>发文单位</div>
-            <div class="tipText tip1"></div>
-            <i class="icon iconfont icon-xiangyoujiantou toLeft"></i>
-          </div>
-          <div class="itemconBOX" isOpen="close" style="display: none;">
-            <div class="itemContent" v-for="list in sxlistItem[1].item">
-              <div class="itemList" @click="UnitSH($event)">
-                <div class="listText">{{ list.name }}</div>
-                <div class="itemTip" select="true"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="sxitemBox">
-          <div class="sxlistItem" @click="showItem(2)">
-            <div>规则类别</div>
-            <div class="tipText tip2"></div>
-            <i class="icon iconfont icon-xiangyoujiantou toLeft"></i>
-          </div>
-          <div class="itemconBOX" isOpen="close" style="display: none;">
-            <!--max-height: 250px;overflow: scroll-->
-            <div class="itemContent" v-for="list in sxlistItem[2].item">
-              <div class="itemList" @click="SortSH($event)">
-                <div class="listText">{{ list.name }}</div>
-                <div class="itemTip" select="true"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="sxitemBox">
-          <div class="sxlistItem" @click="showItem(3)">
-            <div>时效性</div>
-            <div class="tipText tip3"></div>
-            <i class="icon iconfont icon-xiangyoujiantou toLeft"></i>
-          </div>
-          <div class="itemconBOX" isOpen="close" style="display: none;">
-            <div class="itemContent" v-for="list in sxlistItem[3].item">
-              <div class="itemList" @click="TimeSH($event)">
-                <div class="listText">{{ list.name }}</div>
-                <div class="itemTip" select="true"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="sxitemBox">
-          <div class="sxlistItem" @click="showItem(4)">
-            <div>发布日期</div>
-            <div class="tipText tip4" style="width:auto;">
-              <span v-show="dateARR != undefined">{{dateARR}}</span><span
-              v-show="dateARR2 !=''&& dateARR !=''">,</span><span v-show="dateARR2 != undefined">{{dateARR2}}</span>
-            </div>
-            <i class="icon iconfont icon-xiangyoujiantou toLeft"></i>
-          </div>
-          <div class="itemconBOX" isOpen="close" style="display: none;">
-            <div class="itemContent">
-              <div class="itemList">
-                <div class="listText">起始日期</div>
-                <div class="inputBox aa">
-                  <input type="date" required min="1991-11-15" :max="todate" v-model="timesDate1"
-                         placeholder="年 / 月 / 日" @change="timeStart">
-                  <b class="closeDate" @click="timesClose1"
-                     v-show="timesDate1 !== ''"><i style="color: #c1c1c1"
-                                                   class="icon iconfont icon-X"></i></b>
-                </div>
-              </div>
-              <div class="itemList">
-                <div class="listText">结束日期</div>
-                <div class="inputBox bb">
-                  <input type="date" required :min="timesDate1" :max="todate" v-model="timesDate2"
-                         placeholder="年 / 月 / 日" @change="timeEnd">
-                  <b class="closeDate" @click="timesClose2"
-                     v-show="timesDate2 !== ''"><i style="color: #c1c1c1"
-                                                   class="icon iconfont icon-X"></i></b>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="sxFooter">           <!----侧边栏确认重置按钮---->
-        <button class="sxReset" @click="SXReset($event)">重置</button>
-        <button class="sxYeah" @click="shaixuanY">确认</button>
-      </div>
-    </mt-popup>
     <xiaoan-loading v-show="shadowLoading" bgColor="rgba(0,0,0,0.5)" borderWidth="2px"></xiaoan-loading>
     <!--内容页-->
     <div class="wrapper" id="wrapper" ref="wrapperDom" :style="{height: heightDom.wrapperHeight+'px'}">
@@ -307,9 +302,6 @@
         <mt-spinner type="snake" v-show="allLoadeded"></mt-spinner>
         <span v-if="allLoadeded" style="vertical-align: middle">加载中...</span>
         <xiaoan-drop v-else></xiaoan-drop>
-        <!--<span v-else class="infinite-drop">
-                      <span class="infinite-drop-left"></span><span>没有更多了</span><span class="infinite-drop-right"></span>
-                  </span>-->
       </p>
     </div>
     <div class="noTrySenior" v-show="trySeniorDis">
@@ -341,11 +333,72 @@
 <script>
   import loading from "../../components/warning/loading"
   import drop from "../../components/warning/drop"
-
+  import {Popup, TransferDom, XHeader} from 'vux'
   export default {
     name: 'ruleslist',
+    directives: {
+      TransferDom
+    },
+    components: {
+      "xiaoan-loading": loading,
+      "xiaoan-drop": drop,
+      Popup,
+      XHeader
+    },
     data() {
       return {
+        preparationBox: [
+          {
+            id: 0,
+            alt: 'Marketplace',
+            name: '市场类型',
+            select: [],
+            selected: [],
+            isActive: false,
+            show: true,
+            isRightActive: false
+          },
+          {
+            id: 1,
+            alt: 'DispatchUnit',
+            name: '发文单位',
+            select: [],
+            selected: [],
+            isActive: false,
+            show: true,
+            isRightActive: false
+          },
+          {
+            id: 2,
+            alt: 'RuleClass',
+            name: '规则类别',
+            select: [],
+            selected: [],
+            isActive: false,
+            show: true,
+            isRightActive: false
+          },
+          {
+            id: 3,
+            alt: 'Timeliness',
+            name: '时效性',
+            select: [],
+            selected: [],
+            isActive: false,
+            show: false,
+            isRightActive: false
+          }
+        ],
+        sxlistItem: [
+          {name: '市场类型', item: []},
+          {name: '发文单位', item: []},
+          {name: '规则类别', item: []},
+          {name: '时效性', item: []}
+        ],
+        totalNumber: 0,
+        preparationPopup: false,
+        filterBoxHeight: '',
+
         timesDate1: "",
         timesDate2: "",
         More: '更多搜索选项',
@@ -393,21 +446,6 @@
             item: []
           },
           {
-            name: '时效性',
-            item: []
-          }
-        ],
-        sxlistItem: [
-          {
-            name: '市场类型',
-            item: []
-          }, {
-            name: '发文单位',
-            item: []
-          }, {
-            name: '规则类别',
-            item: []
-          }, {
             name: '时效性',
             item: []
           }
@@ -473,62 +511,21 @@
         },
         redCircleDis: false, // 筛选的小红点显示
         redCircleExpert: false,
+        // shan
         showSearch: false,
         showSearch1: false,
         showSearch2: false,
+        //
         trySeniorShow: false, // 没有搜索结果时候
         seniorTextShow: false, // 没有搜索结果时候
         trySeniorDis: false, // 没有搜索结果时候
-        searchBoxTrue: false
+        searchBoxTrue: false,
+        // ////
+        ruleParams: {}
       }
     },
-    components: {
-      "xiaoan-loading": loading,
-      "xiaoan-drop": drop,
-    },
+
     watch: {
-      xianshi: function (val, old) {
-        console.log("xianshi", val, old);
-        if (old == false) {
-          $(".search2").css('border-color', '#fff');
-          // //console.log("市场类型展开******* 1-2")
-          // //console.log("此时已经确认提交的筛选条件 市场类型 为", this.marketStatus)
-        } else if (old == true && val == false) {
-          $(".search2").css('border-color', '#e3e3e3');
-          // //console.log('市场类型关闭******* 11-22')
-          // //console.log("市场类型需要设置选中状态的条件id值", this.marketIdStatus)
-          // //console.log("此时已经确认提交的筛选条件 市场类型 为", this.marketStatus)
-        }
-        this.xianshiOne();
-      },
-      xianshi1: function (val, old) {
-        // console.log("xianshi1",val, old);
-        if (old == false) {     // 发文单位筛选条件栏展开
-          // //console.log("发文单位展开******* 1-2")
-          $(".search3").css('border-color', '#fff')
-        } else if (old == true && val == false) {  // 发文单位筛选条件栏关闭 隐藏
-          $(".search3").css('border-color', '#e3e3e3');
-          // //console.log("发文单位关闭******* 11-22")
-          // //console.log('发文单位需要设置选中状态的条件id值', this.fawenIdStatus)
-          // //console.log("要和发文单位的筛选条件比较id值相同的为需要设置选中状态的条件", this.fawenStatus)
-          // $(".search1").css('border-right', '0.5px solid #e3e3e3')
-        }
-        this.xianshiTwo();
-      },
-      xianshi2: function (val, old) {
-        console.log("xianshi2", val, old);
-        if (old == false) {
-          // //console.log("规则类别展开******* 1-2")
-          $(".search4").css('border-left-color', '#fff');
-        } else if (old == true && val == false) {
-          $(".search4").css('border-left-color', '#e3e3e3');
-          // //console.log("规则类别关闭******* 11-22")
-          // //console.log('规则类别需要设置选中状态的条件id值---', this.guizeIdStatus)
-          // //console.log("要和规则类别的筛选条件比较id值相同的为需要设置选中状态的条件---", this.guizeStatusA)
-          // $(".search2").css('border-right', '0.5px solid #e3e3e3');
-        }
-        this.xianshiThree();
-      },
       popupVisible1: function () {
         if (this.popupVisible1 == false) {
           setTimeout(() => {
@@ -554,26 +551,24 @@
             $('#wrapper').css({'overflow-y': 'hidden'});
           }, 250);
         }
-      },
-      idarr0: function () {
-        // console.log(this.idarr0);
-      },// 市场类型idarr
-      idarr1: function () {
-        // console.log(this.idarr1);
-      },// 发文单位idarr
-      idarr2: function () {
-        // console.log(this.idarr2);
-      },// 规则类别idarr
+      }
     },
     created() {
-      this.valInput = this.$route.query.inputVal;
+      this.valInput = this.$route.query.titleIncludes;
+
       let date = new Date();
-      let str = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
-      this.todate = str;
+      this.todate = (date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate());
+      //
+      this.ruleParams = this.$storage.localStorageAll('rule-keyword');
+      console.log('从localStorage取出来的数据', this.ruleParams);
+      //
+      this.ApiLawSearch();
+      //
     },
     updated() {
     },
     mounted() {
+      //
       // 页面加载完调用
       this.multipleKeyRetrieval();// 第一个字符串，第二个生成的新字符串
       // 高级默认状态
@@ -582,7 +577,6 @@
       // 获取筛选
       this.Newarr = this.newTitleKey;
       this.preparation();
-      $(".is-fixed").css("z-index", '100');
       this.lineHeight();
       this.$nextTick(() => {
         this.anlist();
@@ -593,32 +587,292 @@
       /**/
       setTimeout(() => {
         this.$nextTick(() => {
-          this.yeah();
+          // this.ApiLawSearch();
+          this.lineheight();
         })
       }, 500)
 
     },
     methods: {
+      lineheight() {
+        this.filterBoxHeight = this.$refs.ruleslistDom.clientHeight - this.$refs.searchsDom.clientHeight - this.$refs.searchBoxDom.clientHeight;
+        console.log(this.$refs.ruleslistDom.clientHeight);
+        console.log(this.$refs.searchsDom.clientHeight);
+        console.log(this.$refs.searchBoxDom.clientHeight);
+      },
+      // 获取筛选
+      preparation() {
+        this.$http({
+          method: 'GET',
+          url: this.$api.host + "getalllmappingrules"
+        }).then((res) => {
+          let content = res.data.returnObject;
+          this.fawenStatus = content.filter((item) => {
+            return item.mappingTypeLable === "organization";
+          });
+          this.guizeStatus = content.filter((item) => {
+            return item.mappingTypeLable === "range";
+          });
+          this.marketStatus = content.filter((item) => {
+            return item.mappingTypeLable === "market";
+          });
+          for (let i = 0; i < this.fawenStatus.length; i++) {
+            let name = this.fawenStatus[i].mapplingVaule;
+            if (name.length > 9) {
+              name = name.substring(0, 9) + '...';
+            }
+            let obj = {id: this.fawenStatus[i].mappingOriginalItems[0].id, name: name, isActive: false};
+            this.selectItems[1].item.push(obj);    // 发文单位
+            this.sxlistItem[1].item.push(obj)// 筛选栏 发文单位
+          }
+          this.fawenStatus = this.sxlistItem[1].item;
+          // feizhi
+          this.preparationBox[1].select = this.sxlistItem[1].item;
+          //
+          for (let i = 0; i < this.marketStatus.length; i++) {
+            let obj = {
+              id: this.marketStatus[i].mappingOriginalItems[0].id,
+              name: this.marketStatus[i].mapplingVaule,
+              isActive: false
+            };
+            this.selectItems[0].item.push(obj);
+            this.sxlistItem[0].item.push(obj)// 规则类别
+          }
+          this.marketStatus = this.sxlistItem[0].item;
+          this.preparationBox[0].select = this.sxlistItem[0].item;
+          //
+          let sss = [];
+          for (let i = 0; i < this.guizeStatus.length; i++) {
+            sss.push(this.guizeStatus[i].mappingOriginalItems)
+          }
+          let strarr = [];
+          for (let i = 0; i < sss.length; i++) {
+            let idarr = [];
+            for (let j = 0; j < sss[i].length; j++) {
+              idarr.push(sss[i][j].id)
+            }
+            strarr.push(idarr.join(','));
+          }
+          let mappingOriginalItems = [], GZLBMapping = [];
+          for (let j = 0; j < strarr.length; j++) {
+            let obj = {
+              id: strarr[j],
+              name: this.guizeStatus[j].mapplingVaule,
+              isActive: false
+            };
+            mappingOriginalItems.push(obj);
+            GZLBMapping.push(obj);
+          }
+          this.selectItems[2].item = mappingOriginalItems;
+          this.sxlistItem[2].item = mappingOriginalItems;
+          this.preparationBox[2].select = this.sxlistItem[2].item;
+          //
+          let objy = [
+            {"id": "现行有效", "name": "现行有效", isActive: false},
+            {"id": "部分失效", "name": "部分失效", isActive: false},
+            {"id": "待生效", "name": "待生效", isActive: false},
+            {"id": "失效", "name": "失效", isActive: false}
+          ];
+          // 因为新版没有有效期的参数
+          this.selectItems[3].item = objy;
+          this.sxlistItem[3].item = objy;
+          this.preparationBox[3].select = this.sxlistItem[3].item;
+          this.timeStatus = objy;
+          // console.log('<====筛选条件======>', this.marketStatus, this.fawenStatus, this.guizeStatus, this.selectItems[1].item, this.sxlistItem[2].item);
+          // 基础数据处理完成
+          this.guizeStatus = mappingOriginalItems;
+          this.guizeArr.push((GZLBMapping).splice(0, 14));
+          this.guizeArr.push(GZLBMapping);
+          this.guizeArr.push(GZLBMapping);
+          this.guizeArr.push(GZLBMapping);
+          // console.log('沪市主板规则类别', this.guizeArr[0]);
+          this.guizeHu = mappingOriginalItems;
+          this.guizeShen = mappingOriginalItems;
+          this.guizeSGem = mappingOriginalItems;
+          this.guizeSSme = mappingOriginalItems;
+          this.guizeStatusA = mappingOriginalItems; // 规则类别筛选匹配ShangHaiBoard(1/4)
+          // console.log("=====>", this.guizeStatus, this.guizeStatusA);
+        }).catch((err) => {
+          // console.log(err);
+        })
+      },
+      // 点击筛选栏
+      preparationClick(index) {
+        console.log(this.preparationBox[index]);
+        if (this.preparationBox[index].isActive) {
+          this.preparationBox[index].isActive = false;
+        } else {
+          for (let i in this.preparationBox) {
+            this.preparationBox[i].isActive = false;
+          }
+          this.preparationBox[index].isActive = true;
+        }
+
+        let a = '';
+        switch (index) {
+          case 0:
+            a = '执行代码块 0';
+
+            break;
+          case 1:
+            a = '执行代码块 1';
+            break;
+          case 2:
+            a = '执行代码块 2';
+            break;
+          default:
+            a = 'n 与 case 1 和 case 2 不同时执行的代码';
+        }
+      },
+      // 正面筛选条件 市场类型
+      MRselect(index) {
+        console.log(index, this.preparationBox[0].select[index]);
+        if (this.preparationBox[0].select[index].isActive) {
+          this.preparationBox[0].select[index].isActive = false;
+        } else {
+          this.preparationBox[0].select[index].isActive = true;
+        }
+      },
+      // 正面筛选条件 发文单位
+      FWselect(index) {
+        console.log(index, this.preparationBox[1].select[index]);
+        if (this.preparationBox[1].select[index].isActive) {
+          this.preparationBox[1].select[index].isActive = false;
+        } else {
+          this.preparationBox[1].select[index].isActive = true;
+        }
+      },
+      // 正面筛选条件 规则类别
+      GZselect(index) {
+        console.log(index, this.preparationBox[2].select[index]);
+        if (this.preparationBox[2].select[index].isActive) {
+          this.preparationBox[2].select[index].isActive = false;
+        } else {
+          this.preparationBox[2].select[index].isActive = true;
+        }
+      },
+      // 筛选重置
+      screenReset(index) {
+        for (let i in this.preparationBox[index].select) {
+          this.preparationBox[index].select[i].isActive = false;
+        }
+        this.preparationBox[index].selected = [];
+        console.log(this.preparationBox[index]);
+      },
+      // 筛选确认
+      screenCertain(index) {
+        this.preparationBox[index].isActive = false;
+        this.preparationBox[index].selected = this.preparationBox[index].select.filter((item) => {
+          return item.isActive === true;
+        });
+        console.log('123456', this.preparationBox[index].selected);
+        this.ruleParamFun(this.preparationBox[index]);
+      },
+      // 处理搜索的数据对接
+      ruleParamFun(selected) {
+        let select = []
+        for (let i in selected.selected) {
+          select.push(selected.selected[i].id);
+        }
+        /*
+        {id: 0, alt: 'Marketplace', name: '市场类型', select: [], selected: [], isActive: false, show: true},
+          {id: 1, alt: 'DispatchUnit', name: '发文单位', select: [], selected: [], isActive: false, show: true},
+          {id: 2, alt: 'RuleClass', name: '规则类别', select: [], selected: [], isActive: false, show: true},
+          {id: 3, alt: 'Timeliness', name: '时效性', select: [], selected: [], isActive: false, show: false},
+          {id: 4, alt: 'ReleaseDate', name: '发布日期', select: [], selected: [], isActive: false, show: false}
+          */
+        if (selected.alt == 'Marketplace') {
+          // name: '市场类型'
+          this.ruleParams.scopeId = select.toString();
+        } else if (selected.alt == 'DispatchUnit') {
+          // name: '发文单位'
+          this.ruleParams.unitIds = select.toString()
+        } else if (selected.alt == 'RuleClass') {
+          // name: '规则类别'
+          this.ruleParams.cateIds = select.toString()
+        } else {
+          // 未知错误
+        }
+        this.ruleslist = [];
+        this.ruleParams.pageNo = 1;
+        this.ApiLawSearch();
+      },
+      // 搜索接口
+      ApiLawSearch() {
+        this.$http({
+          method: "GET",
+          url: this.$api.host + "law/search",
+          params: this.ruleParams
+        }).then((res) => {
+          console.log(res);
+          if (res.data.returnObject.count == "" || res.data.returnObject.count == null) {
+            this.totalNumber = 0;
+          } else {
+            this.totalNumber = res.data.returnObject.count;
+          }
+          let content = res.data.returnObject.list;
+          this.ruleslist = this.$array.loadMore(this.ruleslist, content); // 数据push
+        }).catch((err) => {
+          console.log(err);
+        })
+      },
+      // 上拉加载器
+      loadMore() {
+        if (this.ruleslist.length < this.totalNumber) {
+          this.loading = true;
+        }
+        setTimeout(() => {
+          let lastValue = this.ruleslist.length;
+          if (lastValue < this.totalNumber) {
+            this.ruleParams.pageNo += 1;
+            this.allLoadeded = true;
+            this.ApiLawSearch();
+          } else {
+            if (this.totalNumber && lastValue) {
+              this.allLoadeded = false;
+            }
+          }
+          this.loading = false;
+        }, 80);
+      },
+      // 点击筛选
+      preparationPopupClick() {
+        this.preparationPopup === true ? this.preparationPopup = false : this.preparationPopup = true;
+      },
+      //
+      preparationListClick(index) {
+        console.log(this.preparationBox[index].isRightActive);
+        this.preparationBox[index].isRightActive === true ? this.preparationBox[index].isRightActive = false : this.preparationBox[index].isRightActive = true;
+      },
+      //
+      preparationSelect(k1, k2) {
+        console.log(this.preparationBox[k1].select[k2]);
+        if (this.preparationBox[k1].select[k2].isActive) {
+          this.preparationBox[k1].select[k2].isActive = false;
+        } else {
+          this.preparationBox[k1].select[k2].isActive = true;
+        }
+      },
       // 数据回显
       localstrol() {
-        /*板块*/
+        // *板块*/
         this.idarr0 = this.$storage.localStorageAll("marketIdStatus");
         this.value0 = this.$storage.localStorageAll("value0");
         this.value0text();
-        /*发文单位*/
+        // *发文单位*/
         this.idarr1 = this.$storage.localStorageAll("fawenIdStatus");
         this.value1 = this.$storage.localStorageAll("value1");
         console.log("this.value1", this.value1);
         this.value1text();
-        /*规则*/
+        // *规则*/
         this.idarr2 = this.$storage.localStorageAll("guizeIdStatus");
         this.value2 = this.$storage.localStorageAll("value2");
         this.value2text();
-        /*有效期*/
+        // *有效期*/
         this.idarr3 = this.$storage.localStorageAll("timeIdStatus");
         this.value3 = this.$storage.localStorageAll("value3");
         this.value3text();
-        /*开始时间结束时间*/
+        // *开始时间结束时间*/
         let DateStartEnd = this.$storage.localStorageAll("DateStartEnd");
         if (DateStartEnd == [] || DateStartEnd == null || DateStartEnd.length == 0) {
           this.timesDate1 = '';
@@ -653,7 +907,7 @@
         let heig = (hei - (searchs + searchBox + mintTabbar)) + "px";
         let couHeight = (hei - (searchs + searchBox)) + "px";
         $(".rangeGkipt").css('height', couHeight);
-        $('.itembox').css({'height': this.heightDom.wrapperHeight+'px'});
+        $('.itembox').css({'height': this.heightDom.wrapperHeight + 'px'});
         $(".ruleList").css('height', couHeight);
       },
       // 初始高级赋值
@@ -691,11 +945,11 @@
           }
         }
       },
-      //全文状态
+      // 全文状态
       quanwen() {
         let titleI = [], contentI = [];
         if (window.localStorage.getItem("titleIME") == null) {
-          //console.log("titleIME");
+          // console.log("titleIME");
           this.titleIncludes = this.noep(this.valInput);
         } else {
           titleI = window.localStorage.getItem("titleIME").split("$#");
@@ -705,7 +959,7 @@
         }
         /**/
         if (window.localStorage.getItem("contentIME") == null) {
-          //console.log("contentIME");
+          // console.log("contentIME");
           this.contentIncludes = "";
           this.contentMaybeIncludes = "";
           this.contentExcludes = "";
@@ -716,7 +970,7 @@
           this.contentExcludes = contentI[2];
         }
       },
-      //高级状态
+      // 高级状态
       gaoji(colorBtn) {
         if (window.localStorage.getItem(colorBtn) !== null) {
           let co = window.localStorage.getItem(colorBtn);
@@ -752,7 +1006,7 @@
           this.sea();
         }
       },
-      //规则类别正面筛选框 确认后保存状态
+      // 规则类别正面筛选框 确认后保存状态
       xianshiThree() {
         let arr = [];
         let idarr = [];
@@ -802,7 +1056,7 @@
           }
         }
       },
-      //发文单位正面筛选框 确认后保存状态
+      // 发文单位正面筛选框 确认后保存状态
       xianshiTwo() {
         let arr = [];
         let idarr = [];
@@ -849,7 +1103,7 @@
           }
         }
       },
-      //市场类型正面筛选框 确认后保存状态
+      // 市场类型正面筛选框 确认后保存状态
       xianshiOne() {
         let arr = [];
         let idarr = [];
@@ -896,7 +1150,7 @@
           }
         }
       },
-      //路由传值 去空格加逗号
+      // 路由传值 去空格加逗号
       noep(texts) {
         if (texts.indexOf(" ") == -1) {
           return texts;
@@ -912,11 +1166,11 @@
           return texts = textss.join(",");
         }
       },
-      //筛选确认调用接口
+      // 筛选确认调用接口
       shaixuanY() {
         this.ruleslist = [];
         this.top = 1;
-        this.shadowLoading = true;//加载中出现
+        this.shadowLoading = true; // 加载中出现
         this.targetStr();
         this.allLoaded = true;
         this.yeah();
@@ -926,35 +1180,11 @@
         this.value3text();
         console.log("00012301", this.value0.length, this.value2, this.value3, this.idarr0, this.idarr1, this.idarr2);
       },
-      loadMore() {
-        this.shadowLoading = false;
-        if (this.rulesListNum < this.num) {
-          this.loading = true;
-        }
-        setTimeout(() => {
-          let lastValue = this.rulesListNum;
-          if (lastValue < this.num) {
-            this.top += 1;
-            this.targetStr();//防止参数错误
-            this.allLoadeded = true;
-            //this.yeahFlag = false; //滚动触发的确认方法 开关为false
-            this.yeah();
-            this.yeahFlag = false; //滚动触发的确认方法 开关为fals
-            this.onloadOpen = false;
-            this.searchBoxTrue = true;
-          } else {
-            if (this.num && lastValue) {
-              this.allLoadeded = false;
-            }
-          }
-          this.loading = false;
-          this.searchBoxTrue = false;
-        }, 1000);
-      },
-      //时效性 回显状态
+
+      // 时效性 回显状态
       value3text() {
         console.log("this.value3", this.value3);
-        //console.log('sldkj', this.value3);
+        // console.log('sldkj', this.value3);
         if (this.value3 == [] && this.value3.length == 0) {
           $(".tip3").text('');
         } else {
@@ -963,7 +1193,7 @@
           }
         }
       },
-      //规则类别 回显状态
+      // 规则类别 回显状态
       value2text() {
         console.log("this.value2", this.value2);
         if (this.value2 == [] && this.value2.length == 0) {
@@ -975,9 +1205,9 @@
             $(".tip2").text(this.value2.join(',').substring(0, 8) + '...');
           }
         }
-        //console.log("value2text", this.value2, idArr);
+        // console.log("value2text", this.value2, idArr);
       },
-      //发文单位 回显状态
+      // 发文单位 回显状态
       value1text() {
         console.log("this.value1", this.value1);
         if (this.value1 == [] && this.value1.length == 0) {
@@ -990,13 +1220,13 @@
           }
         }
       },
-      //市场类型 回显状态
+      // 市场类型 回显状态
       value0text() {
         console.log("this.value0", this.value0);
         if (this.value0 == [] && this.value0.length == 0) {
           $(".search1").find('span').text('市场类型');
           $(".tip").text('');
-          //console.log("-===----==>", this.value0);
+          // console.log("-===----==>", this.value0);
         } else {
           for (let i = 0; i < this.value0.length; i++) {
             $(".search1").find('span').text(this.value0[0].substring(0, 3) + '...');
@@ -1007,7 +1237,7 @@
       },
       //
       anlist() {
-        //筛选 时间控件
+        // 筛选 时间控件
         let user = "";
         if (/android/i.test(navigator.userAgent)) {
           //  android
@@ -1020,31 +1250,31 @@
           $(".inputBox").css('width', '65%');
         }
       },
-      //路由传值多个关键词拆分搜索
+      // 路由传值多个关键词拆分搜索
       multipleKeyRetrieval() {
         let titleI = [], contentI = [], key = "";
         if (window.localStorage.getItem("titleIME") == null) {
-          //console.log("titleIME");
+          // console.log("titleIME");
         } else {
           titleI = window.localStorage.getItem("titleIME").split("$#");
         }
         /**/
         if (window.localStorage.getItem("contentIME") == null) {
-          //console.log("contentIME");
+          // console.log("contentIME");
         } else {
           contentI = window.localStorage.getItem("contentIME").split("$#");
         }
         /**/
         if (window.localStorage.getItem("keyIME") == null) {
-          //console.log("keyIME");
+          // console.log("keyIME");
         } else {
           key = window.localStorage.getItem("keyIME");
         }
         /**/
-        //console.log(titleI, contentI, key);
+        // console.log(titleI, contentI, key);
         /**/
         if (window.localStorage.getItem("colorBtn") == null) {
-          //console.log("123colorBtn", 2132432523);
+          // console.log("123colorBtn", 2132432523);
         } else {
           let colorBt = window.localStorage.getItem("colorBtn");
           let scolorBtn = colorBt.split("$#");
@@ -1087,96 +1317,7 @@
           Newarr.push(sArr);
         }
       },
-      // 获取筛选
-      preparation() {
-        this.$http({
-          method: 'GET',
-          url: this.$api.host + "getalllmappingrules",
-        }).then((res) => {
-          let content = res.data.returnObject;
-          this.fawenStatus = content.filter((item) => {
-            return item.mappingTypeLable === "organization";
-          });
-          this.guizeStatus = content.filter((item) => {
-            return item.mappingTypeLable === "range";
-          });
-          this.marketStatus = content.filter((item) => {
-            return item.mappingTypeLable === "market";
-          });
-          for (let i = 0; i < this.fawenStatus.length; i++) {
-            let name = this.fawenStatus[i].mapplingVaule;
-            if (name.length > 9) {
-              name = name.substring(0, 9) + '...';
-            }
-            let obj = {id: this.fawenStatus[i].mappingOriginalItems[0].id, name: name};
-            this.selectItems[1].item.push(obj);    // 发文单位
-            this.sxlistItem[1].item.push(obj)// 筛选栏 发文单位
-          }
-          this.fawenStatus = this.sxlistItem[1].item;
-          //
-          for (let i = 0; i < this.marketStatus.length; i++) {
-            let obj = {
-              id: this.marketStatus[i].mappingOriginalItems[0].id,
-              name: this.marketStatus[i].mapplingVaule
-            };
-            this.selectItems[0].item.push(obj);
-            this.sxlistItem[0].item.push(obj)// 规则类别
-          }
-          this.marketStatus = this.sxlistItem[0].item;
-          //
-          let sss = [];
-          for (let i = 0; i < this.guizeStatus.length; i++) {
-            sss.push(this.guizeStatus[i].mappingOriginalItems)
-          }
-          let strarr = [];
-          for (let i = 0; i < sss.length; i++) {
-            let idarr = [];
-            for (let j = 0; j < sss[i].length; j++) {
-              idarr.push(sss[i][j].id)
-            }
-            strarr.push(idarr.join(','));
-          }
-          let mappingOriginalItems = [], GZLBMapping = [];
-          for (let j = 0; j < strarr.length; j++) {
-            let obj = {
-              "id": strarr[j],
-              "name": this.guizeStatus[j].mapplingVaule,
-            };
-            mappingOriginalItems.push(obj);
-            GZLBMapping.push(obj);
-          }
-          this.selectItems[2].item = mappingOriginalItems;
-          this.sxlistItem[2].item = mappingOriginalItems;
-          //
-          let objy = [
-            {"id": "现行有效", "name": "现行有效"},
-            {"id": "部分失效", "name": "部分失效"},
-            {"id": "待生效", "name": "待生效"},
-            {"id": "失效", "name": "失效"},
-          ];
-          //因为新版没有有效期的参数
-          this.selectItems[3].item = objy;
-          this.sxlistItem[3].item = objy;
-          this.timeStatus = objy;
-          //console.log('<====筛选条件======>', this.marketStatus, this.fawenStatus, this.guizeStatus, this.selectItems[1].item, this.sxlistItem[2].item);
-          //基础数据处理完成
-          this.guizeStatus = mappingOriginalItems;
-          this.guizeArr.push((GZLBMapping).splice(0, 14));
-          this.guizeArr.push(GZLBMapping);
-          this.guizeArr.push(GZLBMapping);
-          this.guizeArr.push(GZLBMapping);
-          //console.log('沪市主板规则类别', this.guizeArr[0]);
-          this.guizeHu = mappingOriginalItems;
-          this.guizeShen = mappingOriginalItems;
-          this.guizeSGem = mappingOriginalItems;
-          this.guizeSSme = mappingOriginalItems;
-          this.guizeStatusA = mappingOriginalItems; //规则类别筛选匹配ShangHaiBoard(1/4)
-          //console.log("=====>", this.guizeStatus, this.guizeStatusA);
-        }).catch((err) => {
-          //console.log(err);
-        })
-      },
-      //点击推荐使用高级搜索 弹出高级搜索侧边栏
+      // 点击推荐使用高级搜索 弹出高级搜索侧边栏
       showSenior() {
         this.popupVisible = true;
       },
@@ -1329,9 +1470,9 @@
           this.timesClose2();
         }
       },
-      //开始日期
+      // 开始日期
       timeStart() {
-        //console.log(this.timesDate1);
+        // console.log(this.timesDate1);
         if (this.timesDate1 != '' && this.timesDate1.indexOf("/") < -1) {
           console.log("==123", this.timesDate1);
         } else {
@@ -1339,9 +1480,9 @@
           this.dateARR = data1;
           console.log("this.timesDate1", this.timesDate1, data1);
         }
-        //this.dateARR =
+        // this.dateARR =
       },
-      //结束日期
+      // 结束日期
       timeEnd() {
         // console.log(this.timesDate2);
         if (this.timesDate2 != '' && this.timesDate2.indexOf("/") < -1) {
@@ -1360,7 +1501,7 @@
         this.timesDate2 = '';
         this.dateARR2 = "";
       },
-      //关闭侧边筛选
+      // 关闭侧边筛选
       SXhide() {
         //筛选侧边栏hide
         this.popupVisible1 = false;
@@ -1390,7 +1531,7 @@
         /**/
         console.log("===!", $(".search1").find('span').text(), $(".search2").find('span').text(), $(".search3").find('span').text());
       },
-      //打开侧边筛选
+      // 打开侧边筛选
       SXshow() {
         this.xianshi = false;
         this.xianshi1 = false;
@@ -1652,7 +1793,7 @@
           }
         }
       },
-      //侧边筛选 时效性
+      // 侧边筛选 时效性
       TimeSH(event) {
         let el = event.currentTarget;
         $(el).find('.itemTip').addClass('selected');
@@ -1683,11 +1824,11 @@
         this.idarr3 = idArr;
         console.log('时效性idArr', this.value3, this.idarr3, idArr);
       },
-      //侧边栏规则类别选中
+      // 侧边栏规则类别选中
       SortSH(event) {
         let el = event.currentTarget;
         $(el).find('.itemTip').addClass('selected');
-        //console.log('1111', $(el).find('.itemTip').attr('select'))
+        // console.log('1111', $(el).find('.itemTip').attr('select'))
         if ($(el).find('.itemTip').attr('select') == 'true') {
           this.value2.push($(el).find('.listText').text());
           $(el).find('.itemTip').attr("select", 'false');
@@ -1701,9 +1842,9 @@
           }
         }
         let idArr = [];
-        ////console.log('市场类型', this.value0, '-----------', '规则类别数组', this.guizeArr);
+        // //console.log('市场类型', this.value0, '-----------', '规则类别数组', this.guizeArr);
         if (this.value0.length == 0) {
-          ////console.log('并未选中市场类型')
+          // //console.log('并未选中市场类型')
           for (let i = 0; i < this.value2.length; i++) {
             $(".search3").find('span').text(this.value2[0].substring(0, 3) + '...')
             $(".tip2").text(this.value2.join(',').substring(0, 8) + '...')
@@ -1721,9 +1862,9 @@
             $(".search3").find('span').text('规则类别');
             $(".tip2").text('');
           }
-          ////console.log('未选中市场类型情况下', this.gzObjarr);
+          // //console.log('未选中市场类型情况下', this.gzObjarr);
           this.idarr2 = idArr;
-          ////console.log('规则类别idArr', this.idarr2);       //未选中市场类型情况下 规则类别的id数组
+          // //console.log('规则类别idArr', this.idarr2);       //未选中市场类型情况下 规则类别的id数组
         } else {                                              //选中市场类型情况下 规则类别的id数组
           for (let i = 0; i < this.value2.length; i++) {
             $(".search3").find('span').text(this.value2[0].substring(0, 3) + '...')
@@ -1742,18 +1883,18 @@
             $(".search3").find('span').text('规则类别');
             $(".tip2").text('');
           }
-          ////console.log('未选中市场类型情况下', this.gzObjarr);
+          // //console.log('未选中市场类型情况下', this.gzObjarr);
           this.idarr2 = idArr;
-          ////console.log('选中状态开启!');
-          for (let i = 0; i < this.value2.length; i++) { //首先循环选中状态的规则类别值
+          // //console.log('选中状态开启!');
+          for (let i = 0; i < this.value2.length; i++) { // 首先循环选中状态的规则类别值
             $(".search3").find('span').text(this.value2[0].substring(0, 3) + '...');
             $(".tip2").text(this.value2.join(',').substring(0, 8) + '...');
-            for (let q = 0; q < this.sxlistItem[0].item.length; q++) {  //循环市场类型数组
-              for (let n = 0; n < this.value0.length; n++) {      //循环是否选中的市场类型
-                if (this.value0[n] == this.sxlistItem[0].item[q].name) {    //若选中市场类型则返回其在guizeArr中的下标值
-                  ////console.log('选中的市场类型的下标值', q);
-                  for (let j = 0; j < this.guizeArr[q].length; j++) { //然后循环选中的市场类型下的规则类别数组
-                    if (this.value2[i] == this.guizeArr[q][j].name) {   //若选中规则类别值等于选中市场类型下规则类别数组的name值 返回其id值
+            for (let q = 0; q < this.sxlistItem[0].item.length; q++) {  // 循环市场类型数组
+              for (let n = 0; n < this.value0.length; n++) {      // 循环是否选中的市场类型
+                if (this.value0[n] == this.sxlistItem[0].item[q].name) {    // 若选中市场类型则返回其在guizeArr中的下标值
+                  // //console.log('选中的市场类型的下标值', q);
+                  for (let j = 0; j < this.guizeArr[q].length; j++) { // 然后循环选中的市场类型下的规则类别数组
+                    if (this.value2[i] == this.guizeArr[q][j].name) {   // 若选中规则类别值等于选中市场类型下规则类别数组的name值 返回其id值
                       let obj = {id: this.guizeArr[q][j].id, name: this.guizeArr[q][j].name};
                       this.gzObjarr.push(obj);
                       idArr.push(this.guizeArr[q][j].id);
@@ -1767,22 +1908,22 @@
             $(".search3").find('span').text('规则类别');
             $(".tip2").text('');
           }
-          ////console.log('-----------', this.gzObjarr);
+          // //console.log('-----------', this.gzObjarr);
           this.idarr2 = idArr;
-          ////console.log('规则类别idArr:', this.idarr2);
-          ////console.log('选中市场类型下的规则类别idArr', this.idarr2);
+          // //console.log('规则类别idArr:', this.idarr2);
+          // //console.log('选中市场类型下的规则类别idArr', this.idarr2);
         }
       },
       UnitSH(event) {
         let el = event.currentTarget;
-        //console.log($(el));
+        // console.log($(el));
         $(el).find('.itemTip').addClass('selected');
-        //console.log('1111', $(el).find('.itemTip').attr('select'));
+        // console.log('1111', $(el).find('.itemTip').attr('select'));
         if ($(el).find('.itemTip').attr('select') == 'true') {
           this.value1.push($(el).find('.listText').text());
           $(el).find('.itemTip').attr("select", 'false');
         } else if ($(el).find('.itemTip').attr('select') == 'false') {
-          //console.log('2222', $(el).find('.itemTip').attr('select'));
+          // console.log('2222', $(el).find('.itemTip').attr('select'));
           $(el).find('.itemTip').removeClass('selected');
           $(el).find('.itemTip').attr("select", 'true');
           for (let i = 0; i < this.value1.length; i++) {
@@ -1806,11 +1947,11 @@
           $(".tip1").text('');
         }
         this.idarr1 = idArr;
-        //console.log('发文单位idArr', idArr);
+        // console.log('发文单位idArr', idArr);
       },
       showItem(i) {
-        //let itemCon = $(".itemconBOX[isOpen]").eq(index);
-        //console.log(itemCon.parent().find("i"));
+        // let itemCon = $(".itemconBOX[isOpen]").eq(index);
+        // console.log(itemCon.parent().find("i"));
         if ($(".itemconBOX[isOpen]").eq(i).attr('isOpen') == 'close') {
           $(".itemconBOX[isOpen]").eq(i).show().parent().siblings().find(".itemconBOX[isOpen]").hide();
           $(".itemconBOX[isOpen]").eq(i).attr('isOpen', 'open');
@@ -1820,41 +1961,8 @@
         }
         console.log($(".itemconBOX[isOpen]").eq(i).attr('isOpen'));
       },
-      //正面筛选条件 市场类型
-      MRselect(event) {
-        let el = event.currentTarget;
-        $(el).find('.aaa').addClass('selected');
-        if ($(el).find('.aaa').attr("select") == 'true') {
-          this.value0.push($(el).find('.bbb').text());
-          $(el).find('.aaa').attr("select", 'false');
-        } else if ($(el).find('.aaa').attr("select") == 'false') {
-          $(el).find('.aaa').removeClass('selected');
-          for (let i = 0; i < this.value0.length; i++) {
-            if ($(el).find('.bbb').text() == this.value0[i]) {
-              this.value0.splice(i, 1);
-            }
-          }
-          $(el).find('.aaa').attr("select", 'true');
-        }
-        let idArr = [];
-        for (let i = 0; i < this.value0.length; i++) {
-          $(".search1").find('span').text(this.value0[0].substring(0, 3) + '...');
-          $(".tip").text(this.value0.join(',').substring(0, 8) + '...');
-          for (let j = 0; j < this.sxlistItem[0].item.length; j++) {
-            if (this.value0[i] == this.sxlistItem[0].item[j].name) {
-              idArr.push(this.sxlistItem[0].item[j].id);
-            }
-          }
-        }
-        if (this.value0.length == 0) {
-          $(".search1").find('span').text('市场类型');
-          $(".tip").text('');
-        }
-        this.idarr0 = idArr;
-        //console.log('市场类型idArr', idArr, this.value0, this.sxlistItem[0].item);
 
-      },
-      //正面筛选条件 市场类型 重置
+      // 正面筛选条件 市场类型 重置
       MRreset(event) {
         let el = event.currentTarget;
         let father = $(el).parent().parent();
@@ -1866,47 +1974,11 @@
         this.value0 = [];
         this.idarr0 = [];//重置市场类型数组
         $(".search1").find('span').text('市场类型')
-        ////console.log('12', this.guizeStatus);
+        // //console.log('12', this.guizeStatus);
       },
-      //正面筛选条件 规则类别
-      GZselect(event) {
-        /*this.frontStatus=true; */ //状态判断是正面筛选栏出来的条件 发文单位
-        let el = event.currentTarget;
-        $(el).find('.aaa').addClass('selected');
-        if ($(el).find('.aaa').attr("select") == 'true') {
-          this.value2.push($(el).find('.bbb').text());
-          $(el).find('.aaa').attr("select", 'false');
-        } else if ($(el).find('.aaa').attr("select") == 'false') {
-          $(el).find('.aaa').removeClass('selected');
-          for (let i = 0; i < this.value2.length; i++) {
-            if ($(el).find('.bbb').text() == this.value2[i]) {
-              this.value2.splice(i, 1);
-            }
-          }
-          $(el).find('.aaa').attr("select", 'true');
-        }
-        //console.log('选中数组', this.value2);
-        let idArr = [];
-        for (let i = 0; i < this.value2.length; i++) {
-          $(".search3").find('span').text(this.value2[0].substring(0, 3) + '...');
-          $(".tip").text(this.value2.join(',').substring(0, 8) + '...');
-          for (let j = 0; j < this.sxlistItem[2].item.length; j++) {
-            if (this.value2[i] == this.sxlistItem[2].item[j].name) {
-              idArr.push(this.sxlistItem[2].item[j].id);
-            }
-          }
-        }
-        if (this.value2.length == 0) {
-          $(".search3").find('span').text('规则类别');
-          $(".tip2").text('');
-        }
-        this.idarr2 = idArr;
-        this.idarr2 = $.unique(this.idarr2);
-        //console.log('点击选择的规则类别idArr:', idArr, this.sxlistItem[2].item, this.value2, this.idarr2);
-      },
-      //正面筛选条件 规则类别 重置
+      // 正面筛选条件 规则类别 重置
       GZreset(event) {
-        this.yeahFlag = false; //重置后确认按钮恢复为false
+        this.yeahFlag = false; // 重置后确认按钮恢复为false
         let el = event.currentTarget;
         let father = $(el).parent().parent();
         for (let i in father.find('.aaa')) {
@@ -1929,47 +2001,13 @@
         } else {
           this.redCircleDis = true;
         }
-        //console.log("redCircleStatus===>",stausArr,this.inputDateS,this.inputDateE);
+        // console.log("redCircleStatus===>",stausArr,this.inputDateS,this.inputDateE);
       },
-      //正面筛选条件 发文单位
-      select(event) {
-        /*this.frontStatus=true; */ //状态判断是正面筛选栏出来的条件 发文单位
-        let el = event.currentTarget;
-        $(el).find('.aaa').addClass('selected');
-        if ($(el).find('.aaa').attr("select") == 'true') {
-          this.value1.push($(el).find('.bbb').text());
-          $(el).find('.aaa').attr("select", 'false');
-        } else if ($(el).find('.aaa').attr("select") == 'false') {
-          $(el).find('.aaa').removeClass('selected');
-          for (let i = 0; i < this.value1.length; i++) {
-            if ($(el).find('.bbb').text() == this.value1[i]) {
-              this.value1.splice(i, 1);
-            }
-          }
-          $(el).find('.aaa').attr("select", 'true');
-        }
-        let idArr = [];
-        for (let i = 0; i < this.value1.length; i++) {
-          $(".search2").find('span').text(this.value1[0].substring(0, 3) + '...');
-          $(".tip1").text(this.value1.join(',').substring(0, 8) + '...');
-          for (let j = 0; j < this.sxlistItem[1].item.length; j++) {
-            if (this.value1[i] == this.sxlistItem[1].item[j].name) {
-              idArr.push(this.sxlistItem[1].item[j].id);
-            }
-          }
-        }
-        if (this.value1.length == 0) {
-          $(".search2").find('span').text('发文单位');
-          $(".tip1").text('');
-        }
-        this.idarr1 = idArr;
-        //console.log('发文单位', this.value1, idArr, this.sxlistItem[1].item);
-      },
-      //正面筛选条件 发文单位 重置
-      reset(event) {  //重置发文单位筛选条件
-        this.fawenStatus = [];//重置保存发文单位的筛选条件
+      // 正面筛选条件 发文单位 重置
+      reset(event) {  // 重置发文单位筛选条件
+        this.fawenStatus = [];// 重置保存发文单位的筛选条件
         this.fawenIdStatus = [];
-        this.yeahFlag = false; //重置后确认按钮恢复为false
+        this.yeahFlag = false; // 重置后确认按钮恢复为false
         let el = event.currentTarget;
         let father = $(el).parent().parent();
         for (let i in father.find('.aaa')) {
@@ -1978,25 +2016,25 @@
           }
         }
         this.value1 = [];
-        this.idarr1 = [];//重置发文单位数组
+        this.idarr1 = [];// 重置发文单位数组
         $(".search2").find('span').text('发文单位');
         this.redCircleStatus();
       },
-      //筛选\高级\初始化\控制的ajax
-      yeah() {        //点击确定发送请求数据
+      // 筛选\高级\初始化\控制的ajax
+      yeah() {        // 点击确定发送请求数据
         this.noInfoShow = false;
         $("#LoadScroll").css("margin-bottom", "0.8rem");
         this.gunflag = false;
-        this.yeahFlag = true; //点击确认按钮后 yeahFlag开关打开 此时还有一种情况为加载更多的触发情况
+        this.yeahFlag = true; // 点击确认按钮后 yeahFlag开关打开 此时还有一种情况为加载更多的触发情况
         let markerIds = this.idarr0.join(',');
-        let unitIds = this.idarr1.join(','); //发文单位
+        let unitIds = this.idarr1.join(','); // 发文单位
         this.idarr2 = this.$array.unique(this.idarr2);
         let cateIds = this.idarr2.join(',');
         let idarr3Id = this.$array.ImpArr(this.idarr3);
         let timelinessIds = idarr3Id.join(',');
-        //console.log("====", idarr3Id, this.idarr3, timelinessIds);
-        //规则类别id值 如果只选了市场类型 cateIds就填市场类型的id  如果市场类型和规则类别都填了 cateIds只写规则类别的id
-        //console.log('this.idarr0', this.idarr0,"this.idarr1",this.idarr1, 'this.idarr2', this.idarr2);
+        // console.log("====", idarr3Id, this.idarr3, timelinessIds);
+        // 规则类别id值 如果只选了市场类型 cateIds就填市场类型的id  如果市场类型和规则类别都填了 cateIds只写规则类别的id
+        // console.log('this.idarr0', this.idarr0,"this.idarr1",this.idarr1, 'this.idarr2', this.idarr2);
         /**/
         let releaseStart = this.timesDate1;
         let releaseEnd = this.timesDate2;
@@ -2012,58 +2050,40 @@
         } else {
           releaseEnd = "";
         }
-        //console.log("=====>", this.timesDate1, this.timesDate2, releaseStart, releaseEnd);
+        // console.log("=====>", this.timesDate1, this.timesDate2, releaseStart, releaseEnd);
         if (Array.isArray(this.titleIncludes)) {
           this.titleIncludes = this.titleIncludes.join(",");
         }
         /**/
-        /*********************高级选项*************************/
+        // *********************高级选项************************ */
         this.$http({
           method: "GET",
           url: this.$api.host + "law/search",
-          params: {
-            pageNo: this.top,//页码
-            pageSize: this.bottom,//每页行数
-            unitIds: unitIds,//发文单位
-            timelinessIds: timelinessIds,//时效性
-            sortType: this.sortType,//搜索排序，时间排序time
-            releaseStart: releaseStart,//发布日期（起）
-            releaseEnd: releaseEnd,//发布日期（止）
-            scopeId: markerIds,
-            cateIds: cateIds,//分类ID
-            titleIncludes: this.titleIncludes,//标题包含
-            titleExcludes: this.titleExcludes,//标题不包含
-            titleMaybeIncludes: this.titleMaybeIncludes,//标题可能包含
-            fullTextIncludes: this.contentIncludes,//正文包含
-            fullTextExcludes: this.contentExcludes,//正文不包含
-            fullTextMaybeIncludes: this.contentMaybeIncludes,//正文可能包含
-            type: "law",//类型, law, case, qa, 默认是law
-            key: this.keys,
-          }
+          params: this.ruleParams
         }).then((res) => {
-          //console.log('返回结果', res);
-          //保存筛选条件状态
+          // console.log('返回结果', res);
+          // 保存筛选条件状态
           this.fawenIdStatus = this.idarr1;     // 保存 提交的发文单位的筛选条件
-          this.guizeIdStatus = this.idarr2;  //保存 提交的规则类别的筛选条件
-          this.timeIdStatus = timelinessIds.split(','); //保存 提交的时效性的筛选条件
-          this.marketIdStatus = this.idarr0; //保存 提交的市场类型的筛选条件
+          this.guizeIdStatus = this.idarr2;  // 保存 提交的规则类别的筛选条件
+          this.timeIdStatus = timelinessIds.split(','); // 保存 提交的时效性的筛选条件
+          this.marketIdStatus = this.idarr0; // 保存 提交的市场类型的筛选条件
           releaseStart ? this.inputDateS = releaseStart : this.inputDateS = "";
           releaseEnd ? this.inputDateE = releaseEnd : this.inputDateE = "";
-          //this.inputDateE = releaseEnd;
-          this.yeahFlag = false; //点击确认按钮获取到内容后 yeahFlag开关关闭false
+          // this.inputDateE = releaseEnd;
+          this.yeahFlag = false; // 点击确认按钮获取到内容后 yeahFlag开关关闭false
           if (res.data.returnCode == 1) {
-            this.onloadOpen = true;//返回内容后 打开上滑加载的开关
+            this.onloadOpen = true;// 返回内容后 打开上滑加载的开关
             if (res.data.returnObject.list == null || res.data.returnObject.list == []) {
               this.noInfoShow = true;
             } else {
-              this.noInfoShow = false;//有筛选结果的提示页面消失
+              this.noInfoShow = false;// 有筛选结果的提示页面消失
             }
             if (res.data.returnObject.count == "" || res.data.returnObject.count == null) {
               this.num = 0;
             } else {
               this.num = res.data.returnObject.count;
             }
-            //res.data.returnObject.count ? this.num = res.data.returnObject.count : this.num = 0;
+            // res.data.returnObject.count ? this.num = res.data.returnObject.count : this.num = 0;
             if (this.num < 5) {
               this.allLoaded = false;
               this.infLoading = false;
@@ -2085,7 +2105,7 @@
             /**/
             let colorBtn = $('.rangeBtn div .colorBtn').text();
             if (this.Number <= 3 && colorBtn == '标题') {
-              //如果筛选的结果小于3条 显示提示高级搜索
+              // 如果筛选的结果小于3条 显示提示高级搜索
               this.seniorTextShow = true;
             } else if (this.Number <= 3 && colorBtn == '全文') {
               this.seniorTextShow = false;
@@ -2093,25 +2113,25 @@
               this.seniorTextShow = false;
             }
             console.log(this.num, colorBtn);
-            this.shadowLoading = false;//加载中消失
+            this.shadowLoading = false;// 加载中消失
             this.allLoaded = true;
             let content = res.data.returnObject.list;
-            this.ruleslist = this.$array.loadMore(this.ruleslist, content); //数据push
+            this.ruleslist = this.$array.loadMore(this.ruleslist, content); // 数据push
             if (this.seniorTextShow === false && content == null) {
               this.noInfoShow = true;
             }
             /**/
             this.rulesListNum = this.ruleslist.length;
-            //关闭当前栏目
+            // 关闭当前栏目
             $(".search-mrpx").removeClass('pass');
-            this.showSearch1 = false;//发文单位的显示
+            this.showSearch1 = false; // 发文单位的显示
             this.xianshi1 = false;
-            this.showSearch2 = false;//规则类别的显示
+            this.showSearch2 = false; // 规则类别的显示
             this.xianshi2 = false;
-            this.showSearch = false; //市场类型的显示
+            this.showSearch = false;  // 市场类型的显示
             this.xianshi = false;
             this.popupVisible1 = false;
-            /*筛选按钮红点状态显示*/
+            // *筛选按钮红点状态显示*/
             let stausArr1 = this.value0.concat(this.value1);
             let stausArr2 = this.value2.concat(this.value3);
             let stausArr = stausArr1.concat(stausArr2);
@@ -2126,18 +2146,12 @@
               this.xianshiTwo();
               this.xianshiThree();
               this.SXhide();
-              /**/
-              this.$nextTick(() => {
-                /*this.xianshiOne();
-                                this.xianshiTwo();
-                                this.xianshiThree();*/
-              });
               console.log(']]]]]]]]]]]]]]', this.value1, stausArr, this.inputDateS, this.inputDateE);
             }
 
           } else if (res.data.returnCode == -1) {
-            this.shadowLoading = false;//加载中消失
-            //关闭当前栏目
+            this.shadowLoading = false;// 加载中消失
+            // 关闭当前栏目
             $(".search-mrpx").removeClass('pass');
             this.showSearch1 = false;
             this.xianshi1 = false;
@@ -2146,8 +2160,8 @@
             this.showSearch = false;
             this.xianshi = false;
             this.popupVisible1 = false;
-            /* $(".shadow").hide();*/
-            this.noInfoShow = true;//没有筛选结果的提示页面显示
+            /* $(".shadow").hide(); */
+            this.noInfoShow = true;// 没有筛选结果的提示页面显示
             this.seniorTextShow = false; // "flex"  6.1版本苹果机上 文字提示信息 上拉出现bug
             this.num = 0;
           }
@@ -2157,11 +2171,11 @@
           }, 500);
           this.noInfoShow = true;
         });
-        //同步筛选栏 发文单位-规则类别 数据
+        // 同步筛选栏 发文单位-规则类别 数据
         this.popupVisible1 = false;
         this.InsideAndOutside();
       },
-      //筛选数据
+      // 筛选数据
       InsideAndOutside() {
         let showText = $(".showSearch1").find('.bbb');
         for (let i = 0; i < this.value1.length; i++) {
@@ -2339,7 +2353,7 @@
           this.xianshi = false;
           this.xianshi2 = false;
           let showHei = ($('body').outerHeight()) - ($('.searchs').outerHeight()) - ($('.searchBox').outerHeight()) + 'px'
-         // $(".showSearch1").height(this.heightDom.ruleslistHeight+'px');
+          // $(".showSearch1").height(this.heightDom.ruleslistHeight+'px');
           this.showSearch1 = true;
           //发文单位筛选条件显示  默认排序规则类别筛选条件隐藏
           this.showSearch = false;   //隐藏默认排序
@@ -2561,167 +2575,6 @@
         $('.serachTitle input').css("border-color", "#8d8d8d");
         $('.serachCont input').css("border-color", "#8d8d8d");
       },
-      //高级的确认提交
-      searchMany() {
-        $('input').blur();
-        let topBtn = $('.rangeBtn div .colorBtn').text();
-        let buttonBtn = $('.rangeBtn_2 div .colorBtn').text();
-        //console.log("(的撒大苏打);", topBtn, buttonBtn);
-        this.redCircleExpert = false;
-        window.localStorage.setItem("BtnMany", topBtn + "$#" + buttonBtn);
-        //////
-        if (topBtn === '标题' && buttonBtn === '精确') {
-          this.keys = "";
-          //console.log("标题,精确：" + this.titleIncludes);
-          if (this.titleIncludes.trim().length === 0) {
-            //console.log("必须包含项必填");
-            $(".titleTip").show();
-            $('#mustInput').focus();
-          } else {
-            this.shadowLoading = true;//加载中出现
-            $(".titleTip").hide();
-            if (this.titleIncludes.trim().indexOf(" ") !== -1 || this.titleMaybeIncludes.trim().indexOf(" ") !== -1 || this.titleExcludes.trim().indexOf(" ") !== -1) {
-              //console.log("有空格" + "三个都不符合");
-              ////转换成数组后去除空元素在用逗号拼接
-              let tilIn = this.titleIncludes.trim().split(' ');
-              this.ImpArr(tilIn);
-              this.Newarr = [];
-              this.Newarr = tilIn;
-              this.titleIncludes = tilIn.join(",");
-              //console.log(this.titleIncludes);
-              //转换成数组后去除空元素在用逗号拼接
-              let tilMaBe = this.titleMaybeIncludes.trim().split(" ");
-              this.ImpArr(tilMaBe);
-              this.titleMaybeIncludes = tilMaBe.join(",");
-              //console.log(this.titleMaybeIncludes);
-              //转换成数组后去除空元素在用逗号拼接
-              let tilEx = this.titleExcludes.trim().split(" ");
-              this.ImpArr(tilEx);
-              this.titleExcludes = tilEx.join(',');
-              //console.log(this.titleExcludes);
-              //
-              /* this.popupVisible = false;*/
-              //document.querySelector('.showOp').style.display = 'none';
-              this.Newarr = [];
-              this.Newarr = this.titleIncludes.trim().split(',');//转数组
-              //console.log(this.Newarr);
-              /*this.yeah();*/
-            } else {
-              //console.log("三个有一个符合就执行");
-              this.titleMaybeIncludes = this.titleMaybeIncludes.trim().split(" ").join(",");
-              //console.log(this.titleMaybeIncludes);
-              this.titleExcludes = this.titleExcludes.trim().split(" ").join(",");
-              //console.log(this.titleExcludes);
-              if (this.titleIncludes.trim().indexOf(" ") !== -1) {
-                this.Newarr = [];
-                this.titleIncludes = this.titleIncludes.trim().split(' ');
-                this.Newarr = this.titleIncludes;
-                //console.log("1435" + this.titleIncludes);
-              } else {
-                this.Newarr = [];
-                this.Newarr.unshift(this.titleIncludes);
-              }
-              //console.log(this.Newarr);
-              //console.log("有标题：" + this.titleIncludes);
-              /* this.yeah();
-                             this.popupVisible = false;*/
-              //document.querySelector('.showOp').style.display = 'none';
-            }
-            if (this.titleMaybeIncludes !== '' || this.titleExcludes !== '') {
-              this.redCircleExpert = true;
-            }
-
-            this.FSAjax();
-          }
-          //全文\模糊\触发
-        } else if (topBtn === '全文' && buttonBtn === '模糊') {
-          this.redCircleExpert = true;
-          this.shadowLoading = true;//加载中出现
-          //console.log("全文,模糊" + this.titleIncludes);
-          let thnews = this.Newarr.join(",");
-          this.keys = thnews;
-          this.titleIncludes = '';
-          //console.log("值" + this.keys);
-          this.FSAjax();
-          //全文\精确\触发
-          //
-        } else if (topBtn === '全文' && buttonBtn === '精确') {
-          this.keys = "";
-          if (this.contentIncludes.trim().length === 0) {
-            //console.log("必填");
-            $('.titleTip1').show();
-          } else {
-            this.redCircleExpert = true;
-            //console.log("1461", this.keys, this.titleIncludes, this.titleMaybeIncludes, this.titleExcludes);
-            //////
-            this.shadowLoading = true;//加载中出现
-            if (this.titleIncludes) {
-
-            }
-            //this.contentIncludes
-            if (this.contentIncludes.trim().indexOf(" ") !== -1) {
-              //console.log("全文必包含" + "有空格");
-              let contIn = this.contentIncludes.trim().split(" ");
-              this.ImpArr(contIn);//去除空格
-              this.Newarr = [];//
-              this.Newarr = contIn;
-              this.contentIncludes = contIn.join(",");
-              //console.log("this.contentIncludes", this.contentIncludes);
-            } else {
-              let contIn = this.contentIncludes.trim().split(" ");
-              this.ImpArr(contIn);
-              this.Newarr = [];
-              this.Newarr = contIn;
-              /*this.contentIncludes = contIn.join(",");
-                            //console.log("xiathis.contentIncludes", this.contentIncludes);*/
-            }
-            //////this.contentMaybeIncludes
-            if (this.contentMaybeIncludes.trim().indexOf(" ") !== -1) {
-              //console.log("全文可能包含" + "有空格");
-              let contMaBe = this.contentMaybeIncludes.trim().split(" ");
-              this.ImpArr(contMaBe);
-              this.contentMaybeIncludes = contMaBe.join(",");
-              //console.log(this.contentMaybeIncludes);
-            }
-            //////this.contentExcludes
-            if (this.contentExcludes.trim().indexOf(" ") !== -1) {
-              //console.log("全文不包含" + "有空格");
-              let contEx = this.contentExcludes.trim().split(" ");
-              this.ImpArr(contEx);
-              this.contentExcludes = contEx.join(",");
-              //console.log(this.contentExcludes);
-            }
-            /*this.titleIncludes*/
-            if (this.titleIncludes.trim().indexOf(" ") !== -1) {
-              //console.log("全文可能包含" + "有空格");
-              let contMaBe = this.titleIncludes.trim().split(" ");
-              this.ImpArr(contMaBe);
-              this.titleIncludes = contMaBe.join(",");
-              //console.log(this.titleIncludes);
-            }
-            /*this.titleMaybeIncludes*/
-            if (this.titleMaybeIncludes.trim().indexOf(" ") !== -1) {
-              //console.log("全文可能包含" + "有空格");
-              let contMaBe = this.titleMaybeIncludes.trim().split(" ");
-              this.ImpArr(contMaBe);
-              this.titleMaybeIncludes = contMaBe.join(",");
-              //console.log(this.titleMaybeIncludes);
-            }
-            /*this.titleExcludes*/
-            if (this.titleExcludes.trim().indexOf(" ") !== -1) {
-              //console.log("全文可能包含" + "有空格");
-              let contMaBe = this.titleExcludes.trim().split(" ");
-              this.ImpArr(contMaBe);
-              this.titleExcludes = contMaBe.join(",");
-              //console.log(this.titleExcludes);
-            }
-            this.FSAjax();
-          }
-        }
-        //////
-
-        /************************************************************************/
-      },
       FSAjax() {
         this.titleIncludes = this.titleIncludes.trim();
         this.titleMaybeIncludes = this.titleMaybeIncludes.trim();
@@ -2910,11 +2763,11 @@
         }
       },
       searchPro() {
-        //console.log('123213213');
+        // console.log('123213213');
       },
-      //点击返回搜索页面
+      // 点击返回搜索页面
       goSearch() {
-        //console.log("sadsadsadsa");
+        // console.log("sadsadsadsa");
         let arr = this.Newarr.join(" ");
         this.zhuangtai();
         this.$router.push({path: '/search', query: {valuess: arr, MathTime: global.timestamp}});
@@ -2923,7 +2776,152 @@
   }
 </script>
 <style lang="scss">
-  #ruleslist {
+  .vux-popup-dialog.xiaoan-right-popup {
+    overflow: auto;
+    .xiaoan-popup-wrapper {
+      width: 100%;
+      height: 100%;
+      background-color: #FFFFFF;
+      overflow: hidden;
+      -webkit-overflow-scrolling: touch;
+      .vux-header {
+        background-color: white;
+        color: #545454;
+        .vux-header-title {
+          color: #545454;
+        }
+        &:after {
+          content: " ";
+          position: absolute;
+          left: 0;
+          bottom: 0;
+          right: 0;
+          height: 1px;
+          border-bottom: 1px solid #D9D9D9;
+          color: #D9D9D9;
+          -webkit-transform-origin: 0 0;
+          transform-origin: 0 0;
+          -webkit-transform: scaleY(0.5);
+          transform: scaleY(0.5);
+        }
+      }
+      .xiaoan-popup-content {
+        width: 100%;
+        height: 80%;
+        padding: 0 0;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        .sxList {
+          .sxitemBox {
+            padding: 0 10px 0 10px;
+            .sxlistItem {
+              // padding: 0 10px 0 0;
+              width: 100%;
+              height: 40px;
+              border-bottom: 0.5px solid #e3e3e3;
+              font-family: PingFangSC-Regular, sans-serif, Microsoft Yahei, Helvetica;
+              font-size: 15px;
+              color: #535353;
+              position: relative;
+              .sxlistItem-title {
+                display: table;
+                width: 100%;
+                height: 100%;
+                .sxlistItem-tip {
+                  display: table-cell;
+                  vertical-align: middle;
+                }
+                .sxlistItem-tip:last-child{
+                  text-align: right;
+                  .icon-xiangyoujiantou{
+                    display: inline-block;
+                    transform: rotate(0deg);
+                    transition: all 0.3s ease-in-out;
+                  }
+                  .icon-angstrom{
+                    display: inline-block;
+                    transform: rotate(90deg);
+                    transition: all 0.3s ease-in-out;
+                  }
+                }
+              }
+            }
+            .sxitemBox {
+              padding: 0 0 0 10px;
+              .sxlistItem {
+                display: table;
+                .sxlistItem-checkbox {
+                  text-align: right;
+                  font-size: 0;
+                }
+                div {
+                  display: table-cell;
+                  vertical-align: middle;
+                  .itemTip {
+                    display: inline-block;
+                    width: 15px;
+                    height: 15px;
+                    border-radius: 2px;
+                    border: 0.5px solid #e3e3e3;
+                    background-color: #f6f7f9;
+                  }
+                  .selected {
+                    border: 0.5px solid #fff;
+                    background-image: url("/static/img/rules/chengseduigou.png");
+                    background-size: contain;
+                    background-repeat: no-repeat;
+                  }
+                }
+              }
+            }
+            .sxitemBox:last-child {
+              padding: 0;
+              .sxlistItem {
+                padding: 0 0 0 10px;
+              }
+            }
+          }
+        }
+      }
+      .xiaoan-popup-footer {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        font-size: 0;
+        width: 100%;
+        height: 50px;
+        display: flex;
+        &:before {
+          content: " ";
+          position: absolute;
+          left: 0;
+          top: 0;
+          right: 0;
+          height: 1px;
+          border-top: 1px solid #D9D9D9;
+          color: #D9D9D9;
+          -webkit-transform-origin: 0 0;
+          transform-origin: 0 0;
+          -webkit-transform: scaleY(0.5);
+          transform: scaleY(0.5);
+        }
+        button {
+          border: 0;
+          background-color: white;
+          flex: 1;
+          height: 100%;
+          font-size: 15px;
+          color: #ffbc61;
+        }
+        button:last-child {
+          background-color: #ffbc61;
+          color: white;
+        }
+      }
+    }
+  }
+  div.ruleslist {
     height: 100%;
     width: 100%;
     background-color: #FFFFFF;
@@ -3034,6 +3032,186 @@
         position: absolute;
         top: 5px;
         right: 9px;
+      }
+    }
+    .searchBox {
+      .search-wrapper {
+        width: 85.5%;
+        height: 100%;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        .search-mrpx {
+          position: relative;
+          flex: 1;
+          text-align: center;
+          font-size: 0;
+          color: #535353;
+          border-left: 0.5px solid #e3e3e3;
+          .search-mrpx-name {
+            font-size: 15px;
+          }
+          .imgBox {
+            margin: 0;
+            padding: 0;
+            font-size: 15px;
+            .iconBottom {
+              font-size: 10px;
+              margin-left: 5px;
+              display: inline-block;
+              transform: rotate(0deg);
+              transition: all 0.3s ease-in-out;
+            }
+          }
+        }
+        .search-mrpx:last-child {
+          border-right: 0.5px solid #e3e3e3;
+        }
+        .pass {
+          height: 36px;
+          background: #fff;
+          margin-top: 5px;
+          line-height: 30px;
+          border: 0.5px solid #e3e3e3;
+          border-bottom: 0;
+          box-sizing: border-box;
+          text-align: center;
+          color: #ffb048;
+          .imgBox {
+            i.iconBottom {
+              display: inline-block;
+              transform: rotate(180deg);
+              transition: all 0.3s ease-in-out;
+            }
+          }
+        }
+        .pass + .search-mrpx {
+          border-left-color: transparent;
+        }
+      }
+      /*筛选以及筛选弹出框*/
+      .search-sx {
+        width: 14.5%;
+        text-align: center;
+        font-size: 15px;
+        color: #535353;
+        border-right: 0.5px solid #e3e3e3;
+        /*overflow: hidden;*/
+        position: relative;
+        .expert_s {
+          font-size: 15px;
+          color: #535353;
+          background-color: white;
+          line-height: 1;
+          border: 0;
+          box-shadow: none;
+          border-radius: 0;
+          letter-spacing: 0;
+          height: auto;
+        }
+        .expert_s:active {
+          background-color: #f0f1f5;
+        }
+      }
+      .search-sx:active {
+        background-color: #f0f1f5;
+      }
+    }
+    .filter-box {
+      position: absolute;
+      left: 0;
+      top: 90px;
+      background: #fff;
+      width: 100%;
+      height: auto;
+      z-index: 800;
+      .item-box {
+        width: 100%;
+        height: 100%;
+        overflow: scroll;
+        -webkit-overflow-scrolling: touch;
+        .item-list, .item-foo {
+          width: 50%;
+          height: 40px;
+          border-bottom: 0.5px solid #e3e3e3;
+          line-height: 40px;
+          padding-left: 12.5px;
+          box-sizing: border-box;
+          position: relative;
+          font-size: 14px;
+          color: #535353;
+          display: flex;
+          align-items: center;
+          justify-content: flex-start;
+          flex-wrap: wrap;
+          float: left;
+          .item-tip {
+            width: 15px;
+            height: 15px;
+            border-radius: 2px;
+            margin-right: 7px;
+            border: 0.5px solid #e3e3e3;
+            background-color: #f6f7f9;
+          }
+          .item-Text {
+          }
+          .selected {
+            border: 0.5px solid #fff;
+            background-image: url("/static/img/rules/chengseduigou.png");
+            background-size: contain;
+            background-repeat: no-repeat;
+          }
+          .item-Hline {
+            width: 1px;
+            height: 17.5px;
+            background: #e3e3e3;
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            top: 0;
+            margin: auto 0;
+          }
+        }
+        .item-list:last-child {
+          .item-Hline {
+            width: 0;
+          }
+        }
+      }
+      .bottomBox {
+        width: 100%;
+        height: 50px;
+        border-top: 0.5px solid #e3e3e3;
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        font-size: 0;
+        button {
+          width: 50%;
+          height: 100%;
+          border: 0;
+          line-height: 50px;
+          text-align: center;
+          font-size: 18px;
+          float: left;
+          font-family: PingFangSC-Medium, sans-serif, Microsoft Yahei, Helvetica !important;
+          color: #ffb048 !important;
+          background-color: white;
+          outline: none;
+        }
+      }
+      .bottomBox button:active {
+        background-color: #f0f1f5;
+      }
+      .bottomBox button + button {
+        background: #ffb048 !important;
+        color: #fff !important;
+        outline: none;
+      }
+      .bottomBox button + button:active {
+        background-color: #f0f1f5;
       }
     }
     .mint-popup-3 {
@@ -3190,6 +3368,17 @@
           opacity: 0.6;
         }
       }
+    }
+    // 公共的属性
+    .redCircle {
+      width: 8px;
+      height: 8px;
+      background: #fb4319;
+      border-radius: 50%;
+      position: absolute;
+      right: 3px;
+      top: -5px;
+      z-index: 1000;
     }
   }
   #ruleslist ._v-container > ._v-content > .loading-layer {
@@ -3490,63 +3679,6 @@
     z-index: 10;
     box-sizing: border-box;
   }
-  .search-s {
-    width: 85.5%;
-    height: 100%;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .search-s .search-mrpx {
-    width: 33.33%;
-    text-align: center;
-    font-family: PingFangSC-Regular, sans-serif, Microsoft Yahei, Helvetica;
-    font-size: 15px;
-    color: #535353;
-    border-left: 0.5px solid #e3e3e3;
-  }
-  /*筛选以及筛选弹出框*/
-  .search-sx {
-    width: 14.5%;
-    text-align: center;
-    font-family: PingFangSC-Regular, sans-serif, Microsoft Yahei, Helvetica;
-    font-size: 15px;
-    color: #535353;
-    box-sizing: border-box;
-    border-left: 0.5px solid #e3e3e3;
-    border-right: 0.5px solid #e3e3e3; /*overflow: hidden;*/
-    position: relative;
-  }
-  .search-sx:active {
-    background-color: #f0f1f5;
-  }
-  .redCircle {
-    width: 8px;
-    height: 8px;
-    background: #fb4319;
-    border-radius: 50%;
-    position: absolute;
-    right: 3px;
-    top: -5px;
-    z-index: 1000;
-  }
-  .search-sx .expert_s {
-    -webkit-appearance: none;
-    font-size: 15px;
-    color: #535353;
-    background-color: white;
-    border: 0;
-    box-shadow: none;
-    border-radius: 0;
-    letter-spacing: 0;
-    padding: 0;
-    padding-top: -5px;
-    height: auto;
-  }
-  .search-sx .expert_s:active {
-    background-color: #f0f1f5;
-  }
   .closeShaixuan {
     width: 15px !important;
     height: 15px !important;
@@ -3576,15 +3708,6 @@
     font-size: 15px;
     color: #323232;
   }
-  .sxLists {
-    width: 100%;
-    height: 80%;
-    padding: 0 10px;
-    box-sizing: border-box;
-    overflow-y: scroll;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-  }
   .itemList {
     border-bottom: 0.5px solid #e3e3e3;
     height: 40px;
@@ -3596,13 +3719,6 @@
   }
   .ruleList .sxlistItem {
     padding: 0;
-  }
-  .itemList .itemTip {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    margin: auto 0;
-    right: 0;
   }
   .inputBox {
     width: 65%;
@@ -3637,16 +3753,6 @@
     width: 100%;
     height: auto;
   }
-  .sxlistItem {
-    width: 100%;
-    height: 40px;
-    border-bottom: 0.5px solid #e3e3e3;
-    line-height: 40px;
-    font-family: PingFangSC-Regular, sans-serif, Microsoft Yahei, Helvetica;
-    font-size: 15px;
-    color: #535353;
-    position: relative;
-  }
   /*.sxlistItem:active {
         background-color: #f0f1f5;
     }*/
@@ -3680,26 +3786,6 @@
     top: 0;
     bottom: 0;
   }
-  .search-mrpx {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-  }
-  .pass {
-    width: 33.5% !important;
-    height: 36px !important;
-    background: #fff !important;
-    margin-top: 5px !important;
-    line-height: 30px !important;
-    border: 0.5px solid #e3e3e3 !important;
-    border-bottom: 0 !important;
-    box-sizing: border-box !important;
-    text-align: center !important;
-    font-size: 15px;
-    color: #ffb048 !important;
-    display: block !important;
-  }
   .search-s .pass p {
     margin-left: 0;
     transform: rotate(180deg);
@@ -3707,109 +3793,6 @@
     -moz-transform: rotate(180deg); /* Firefox */
     -webkit-transform: rotate(180deg); /* Safari 和 Chrome */
     -o-transform: rotate(180deg); /* Opera */
-  }
-  .search-s .pass p .iconBottom {
-    color: #ffb148;
-    margin-left: 0;
-  }
-  .search-mrpx .imgBox {
-    margin: 0;
-    padding: 0;
-    display: inline-block;
-  }
-  .search-mrpx .imgBox .iconBottom {
-    font-size: 10px;
-    margin-left: 6px;
-  }
-  .showSearch, .showSearch1, .showSearch2 {
-    position: absolute;
-    left: 0;
-    top: 90px;
-    background: #fff;
-    width: 100%;
-    height: auto;
-    z-index: 1500
-  }
-  .bottomBox, .sxFooter {
-    width: 100%;
-    height: 50px;
-    border-top: 0.5px solid #e3e3e3;
-    position: relative;
-    left: 0;
-    bottom: 0;
-    font-size: 0;
-  }
-  .bottomBox button, .sxFooter button {
-    width: 50%;
-    height: 100%;
-    border: 0;
-    line-height: 50px;
-    text-align: center;
-    font-size: 18px;
-    float: left;
-    font-family: PingFangSC-Medium, sans-serif, Microsoft Yahei, Helvetica !important;
-    color: #ffb048 !important;
-    background-color: white;
-    outline: none;
-  }
-  .bottomBox button:active, .sxFooter button:active {
-    background-color: #f0f1f5;
-  }
-  .bottomBox button + button, .sxFooter button + button {
-    background: #ffb048 !important;
-    color: #fff !important;
-    outline: none;
-  }
-  .bottomBox button + button:active, .sxFooter button + button:active {
-    background-color: #f0f1f5;
-  }
-  .itembox {
-    width: 100%;
-    height: 100%;
-    overflow: scroll;
-    -webkit-overflow-scrolling: touch;
-    /*display: flex;justify-content: space-between;flex-wrap: wrap;*/
-  }
-  .itemTip {
-    width: 14px;
-    height: 14px;
-    border-radius: 2px;
-    margin-right: 7px;
-    border: 0.5px solid #e3e3e3;
-    background-color: #f6f7f9;
-  }
-  .selected {
-    border: 0.5px solid #fff;
-    background-image: url("/static/img/rules/chengseduigou.png");
-    background-size: contain;
-    background-repeat: no-repeat;
-  }
-  .itemHline {
-    width: 1px;
-    height: 17.5px;
-    background: #e3e3e3;
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    top: 0;
-    margin: auto 0;
-  }
-  .itembox .item {
-    width: 50%;
-    height: 40px;
-    border-bottom: 0.5px solid #e3e3e3;
-    line-height: 40px;
-    padding-left: 12.5px;
-    box-sizing: border-box;
-    position: relative;
-    /*font-family: PingFangSC-Medium, sans-serif, Microsoft Yahei, Helvetica;*/
-    font-size: 14px;
-    color: #535353;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    float: left;
   }
   .ruleslist .shadow {
     width: 100%;

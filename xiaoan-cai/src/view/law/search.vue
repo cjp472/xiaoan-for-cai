@@ -4,9 +4,9 @@
       <div class="seabox">
         <form action="" onsubmit=" return false;">
           <input ref="ipvtextDom" id="ipvtext" type="search" class="text" :placeholder="placeholder"
-                 @blur="searchBlur()" v-model="values" @input="searchInput()" @keyup.13="searchList()"/>
-          <i class="icon iconfont closeInputVals icon-X" @click="closeInputVal()"
-             v-show="closeInputVals"></i>
+                 @blur="searchBlur()" v-model="titleIncludes" @input="searchInput()" @keyup.13="searchList()"/>
+          <i class="icon iconfont icon-X closeInputVals " @click="closeInputVal()"
+             v-show="titleIncludes.length != 0"></i>
         </form>
       </div>
       <div class="" @click="searchList()"><i class="icon iconfont icon-tripsousuo"></i></div>
@@ -15,8 +15,9 @@
       <!--最近搜索-->
       <div class="dsearch">
         <div class="dseText" id="dseText"><span class="dsearchbox"></span>{{dsearch}}</div>
-        <div class="dseClear" @click="dseClear()">{{cleartext}}&nbsp;<i
-          class="icon iconfont icon-shanchu"></i>
+        <div class="dseClear" @click="dseClear()">
+          <span>{{cleartext}}&nbsp;</span>
+          <i class="icon iconfont icon-shanchu"></i>
         </div>
       </div>
       <div class="HistoryS" v-show="HistoryS">{{HistoryText}}</div>
@@ -28,9 +29,12 @@
       </div>
       <!--相关推荐-->
       <div class="dsearch dseOver">
-        <div class="dseText"><span class="dsearchbox"></span>{{hotSearch}}</div>
-        <div class="dseClear" @click="InABatchS()">{{InAbatch}}&nbsp;<i
-          class="icon iconfont icon-huanyipi2"></i>
+        <div class="dseText">
+          <span class="dsearchbox"></span>{{hotSearch}}
+        </div>
+        <div class="dseClear" @click="getHotSearch()">
+          <span>{{InAbatch}}&nbsp;</span>
+          <i class="icon iconfont icon-huanyipi2"></i>
         </div>
       </div>
       <div class="dseResult dseResultDsearch">
@@ -42,7 +46,7 @@
     </div>
     <!--提示搜索-->
     <ul class="prestrains" id="preStar" v-show="prestrains" :style="{height:perHeight+'px'}">
-      <li v-for="(list,index) in prestrain" @click="gocontent(index)">
+      <li v-for="(list,index) in prestrain" @click="toRuleClick(index)">
         <p class="prestrains_div" v-html="key(list.title)"></p>
       </li>
     </ul>
@@ -61,6 +65,7 @@
         promptclose: '../../static/img/rules/promptclose.png',
         clear: '../../static/img/rules/clear.png',
         InABatch: '../../static/img/rules/InABatch.png',
+        titleIncludes: '',
         dsearch: "最近搜索",
         hotSearch: '热门推荐',
         InAbatch: '换一批',
@@ -72,32 +77,29 @@
         placeholder: "搜索法规名称，多个关键字空格隔开",
         defaultResult: [],
         hotResult: [],
-        top: 1,
-        bottom: 15,
-        num: '',
         Newarr: [],
         showLoading: false,
-        isSearch: false,
         prestrains: false,
-        closeInputVals: false,
         HistoryS: true,
-        perHeight: ''
+        perHeight: '',
+        ruleKeyword: {}
       }
     },
+    watch: {},
     components: {
       'xiaoan-loading': loading
     },
     created() {
       //
-      this.hotResults();
-      // 点击列表页的词块
-      this.inputIss();
-      //
-      this.localStorageAll();
-      //
-      if (this.values.trim().length != 0) {
-        this.closeInputVals = true;
+      this.getHotSearch();
+      this.Newarr = this.$storage.localStorage.get('rule-history');
+      if (this.Newarr.length == 0) {
+        this.HistoryS = true;
+      } else {
+        this.HistoryS = false;
       }
+      //
+      console.log('1234567', this.$storage.localStorageAll('rule-history'));
     },
     mounted() {
       this.$nextTick(() => {
@@ -108,44 +110,44 @@
             (this || delegate.obj).focus();
           }, false);
         }, 2000)
-      });
-    },
-    destroyed() {
-      //  document.onkeyup = this.keyUp();
+      })
     },
     methods: {
-      //
-      keyUp(e) {
-        let currKey = 0;
-        // const e = (e || event);
-        currKey = e.keyCode || e.which || e.charCode;
-        let keyName = String.fromCharCode(currKey);
-        console.log("按键码: " + currKey + " 字符: " + keyName);
-      },
-      // 传值是否存在,是否有逗号
-      inputIss() {
-        console.log(this.$route.query.valuess);
-        if (this.$route.query.valuess !== undefined) {
-          if (this.$route.query.valuess.indexOf(",") !== -1) {
-            let arr = this.$route.query.valuess.split(',');
-            this.values = arr.join(" ");
-          } else {
-            this.values = this.$route.query.valuess;
+      // 存储搜索参数
+      storage(key) {
+        this.$nextTick(() => {
+          let newkey = {
+            pageNo: 1, // 页码
+            pageSize: 10, // 每页行数
+            unitIds: '', // 发文单位
+            timelinessIds: '', // 时效性
+            sortType: '', // 搜索排序，时间排序time
+            releaseStart: '', // 发布日期（起）
+            releaseEnd: '', // 发布日期（止）
+            scopeId: '',
+            cateIds: '', // 分类ID
+            titleIncludes: '', // 标题包含
+            titleExcludes: '', // 标题不包含
+            titleMaybeIncludes: '', // 标题可能包含
+            fullTextIncludes: '', // 正文包含
+            fullTextExcludes: '', // 正文不包含
+            fullTextMaybeIncludes: '', // 正文可能包含
+            type: "law", // 类型, law, case, qa, 默认是law
+            key: "" // key 暂时不启用
           }
-        }
-      },
-      // 判断有localStorage
-      localStorageAll() {
-        console.log(window.localStorage.getItem('HistorySearch'));
-        if (window.localStorage.getItem('HistorySearch') === null) {
-          // 没有localStorage的情况
-          this.HistoryS = true;
-        } else {
-          this.HistoryS = false;
-          let read = window.JSON.parse(window.localStorage.getItem('HistorySearch')); // 读取数组
-          this.defaultResult = read;
-          this.Newarr = read;
-        }
+          if (window.localStorage.getItem('rule-keyword')) {
+            // 有
+            let ruleKeyword = this.$storage.localStorage.get('rule-keyword');
+            ruleKeyword.titleIncludes = key;
+            let winnew = window.JSON.stringify(ruleKeyword);
+            this.$storage.localStorage.set('rule-keyword', winnew)
+          } else {
+            // 没有
+            newkey.titleIncludes = key;
+            let winnew = window.JSON.stringify(newkey)
+            this.$storage.localStorage.set('rule-keyword', winnew)
+          }
+        })
       },
       //
       newBtnArr(str) {
@@ -156,172 +158,81 @@
         }
       },
       // 获取热门推荐
-      hotResults() {
-        this.showLoading = true;
-        this.$http.get(this.$api.host + 'getHotSearch').then((res) => {
-          if (res.data.returnCode == 1) {
-            this.showLoading = false;
+      getHotSearch() {
+        this.$http({
+          method: "GET",
+          url: this.$api.host + "getHotSearch",
+          params: {}
+        }).then((res) => {
+          if (res.data.returnCode === 1) {
             this.hotResult = res.data.returnObject;
           }
         }).catch((err) => {
           console.error(err);
         });
       },
-      // localStorage方法
-      localStorageSystem(storage) {
-        if (window.localStorage.getItem('HistorySearch') !== null) {
-          let read = window.JSON.parse(window.localStorage.getItem('HistorySearch')); // 读取数组
-          read.unshift(storage);
-          if (this.unique(read).length > 10) {
-            let arr = this.unique(read).slice(0, 10);
-            localStorage.setItem('HistorySearch', window.JSON.stringify(arr)); // 存入localStorage
-          } else {
-            localStorage.setItem('HistorySearch', window.JSON.stringify(this.unique(read))); // 存入localStorage
+      // 存储 history
+      history(name, value) {
+        if (window.localStorage.getItem(name)) {
+          // you
+          let ruleHistory = this.$storage.localStorageAll(name);
+          ruleHistory.unshift(value);
+          ruleHistory = this.$array.unique(ruleHistory);
+          if (ruleHistory.length >= 20) {
+            ruleHistory.slice(0, 20);
           }
+          this.$storage.localStorageSystem(name, ruleHistory);
+          // console.log('123213', ruleHistory);
         } else {
-          localStorage.setItem('HistorySearch', window.JSON.stringify([storage]));
-        }
-      },
-      // *保存状态*/
-      shous() {
-        let titleI = [], contentI = [], key = "";
-        if (window.localStorage.getItem("titleIME") == null) {
-          console.log("titleIME");
-        } else {
-          titleI = window.localStorage.getItem("titleIME").split("$#");
-        }
-        /**/
-        if (window.localStorage.getItem("contentIME") == null) {
-          console.log("contentIME");
-        } else {
-          contentI = window.localStorage.getItem("contentIME").split("$#");
-        }
-        /**/
-        if (window.localStorage.getItem("keyIME") == null) {
-          console.log("keyIME");
-        } else {
-          key = window.localStorage.getItem("keyIME");
-        }
-        /**/
-        if (window.localStorage.getItem("colorBtn") === null) {
-          // 首次进入
-          console.log("123colorBtn", this.values);
-          window.localStorage.setItem("colorBtn", "标题$#精确");
-          window.localStorage.setItem("BtnMany", "标题$#精确");
-          let newVal = this.values.trim().split(" ");
-          this.ImpArr(newVal);
-          newVal = this.unique(newVal);
-          let news = newVal.join(",");
-          let newtitleIME = news + "$#" + "$#";
-          window.localStorage.setItem("titleIME", newtitleIME);
-          console.log("newtitleIME", newtitleIME, newVal, this.values.trim().split(" "));
-        } else {
-          // 再次进入
-          let colorBt = window.localStorage.getItem("colorBtn");
-          let scolorBtn = colorBt.split("$#");
-          /**/
-          if (scolorBtn[0] == "标题" && scolorBtn[1] == "精确") {
-            let newVal = this.values.trim().split(" ");
-            this.ImpArr(newVal);
-            newVal = this.unique(newVal);
-            let news = newVal.join(",");
-            let newtitleIME = news + "$#" + titleI[1] + "$#" + titleI[2];
-            window.localStorage.setItem("titleIME", newtitleIME);
-            console.log("newtitleIME", newtitleIME, newVal, this.values.trim().split(" "));
-            /**/
-          } else if (scolorBtn[0] == "全文" && scolorBtn[1] == "精确") {
-            let newVal = this.values.trim().split(" ");
-            this.ImpArr(newVal);
-            newVal = this.unique(newVal);
-            let news = newVal.join(",");
-            let newcontentIME = news + "$#" + contentI[1] + "$#" + contentI[2];
-            window.localStorage.setItem("contentIME", newcontentIME);
-            console.log("newcontentIME", newcontentIME, newVal, this.values);
-          } else {
-            let newVal = this.values.trim().split(" ");
-            this.ImpArr(newVal);
-            newVal = this.unique(newVal);
-            let news = newVal.join(",");
-            window.localStorage.setItem("keyIME", news);
-            console.log("news", news, newVal, this.values.trim().split(" "));
-          }
-        }
-      },
-      // 数组去重
-      unique(arr) {
-        let result = [];
-        let obj = {};
-        for (let i = 0; i < arr.length; i++) {
-          if (!obj.hasOwnProperty(arr[i])) {
-            result.push(arr[i]);
-            obj[arr[i]] = 0;
-          }
-        }
-        return result
-      },
-      // 去除空数组
-      ImpArr(array) {
-        for (let i = 0; i < array.length; i++) {
-          if (array[i] === "" || typeof (array[i]) === "undefined") {
-            array.splice(i, 1);
-            i = i - 1;
-          }
+          // meiyou
+          let ruleHistory = [];
+          ruleHistory.unshift(value);
+          console.log('23123123213', ruleHistory, value);
+          this.$storage.localStorageSystem('rule-history', ruleHistory);
         }
       },
       // 点击按钮搜索
       searchList() {
-        this.isSearch = true;
-        if (this.values.trim().length != 0) {
-          let aa = this.values.trim();
-          this.localStorageSystem(aa);
-          this.shous();
-          this.$router.push({path: '/ruleslist', query: {inputVal: this.values, MathTime: global.timestamp}});
-        } else {
-          // *this.$toast({message: '不能为空', position: 'middle', duration: 1500});*/
+        let value = this.$array.ImpArr(this.titleIncludes.split(' '));
+        this.storage(value.join(','));
+        // 存储 history
+        this.history('rule-history', (value.join(' ')));
+        //
+        if (this.titleIncludes.trim().length != 0) {
+          this.$router.push({path: '/ruleslist', query: {titleIncludes: value.join(',')}});
         }
       },
-      // 搜索.get("")
+      // 搜索
       searchInput() {
-        if (this.values.trim().length === 0) {
-          this.closeInputVals = false;
-          this.prestrains = false;
-          this.prestrain = [];
-        } else {
-          let value = "", valArr = [];
-          this.closeInputVals = true;
-          if (this.values.indexOf(" ") > -1) {
-            valArr = this.values.split(" ");
-            valArr = this.$array.ImpArr(valArr);
-            value = valArr.join(",");
-          } else {
-            value = this.values;
+        this.titleIncludes = this.$array.ltrim(this.titleIncludes);
+        let value = this.titleIncludes;
+        this.autoComplete(value);
+      },
+      //
+      autoComplete(value) {
+        this.$http({
+          method: "GET",
+          url: this.$api.host + "law/autoComplete",
+          params: {
+            title: value
           }
-          console.log("==>", valArr, this.values.indexOf(" "));
-          this.$http({
-            method: "GET",
-            url: this.$api.host + "law/autoComplete",
-            params: {
-              title: value
-            }
-          }).then((res) => {
-            if (res.data.returnObject.length == 0) {
-              this.prestrains = false;
-              this.prestrain = [];
-            } else {
-              this.prestrain = res.data.returnObject;
-              this.prestrains = true;
-            }
-            // 关键词高亮
-            // ---------------------------
-          }).catch((err) => {
-            console.error(err);
-          });
-        }
+        }).then((res) => {
+          if (res.data.returnObject.length == 0) {
+            this.prestrains = false;
+            this.prestrain = [];
+          } else {
+            this.prestrain = res.data.returnObject;
+            this.prestrains = true;
+          }
+          // 关键词高亮
+        }).catch((err) => {
+          console.error(err);
+        });
       },
       // 高亮方法
       key(str) {
         let star = [];
-        star = this.values.trim().split(" ");
+        star = this.titleIncludes.trim().split(" ");
         for (let i = 0; i < star.length; i++) {
           if (star[i] == "" || typeof (star[i]) == "undefined" || star[i] == 0 || star[i] == 1 || star[i] == 2 || star[i] == 3 || star[i] == 4 || star[i] == 5 || star[i] == 6 || star[i] == 7 || star[i] == 8 || star[i] == 9) {
             star.splice(i, 1);
@@ -337,58 +248,48 @@
       },
       // input失去焦点
       searchBlur() {
-        if (this.values.length === 0) {
-          this.values = "";
+        if (this.titleIncludes.length === 0) {
+          this.titleIncludes = "";
           $('.groupDsearch').show();
           this.prestrains = false;
         }
       },
       // 搜索的预提示
-      gocontent(index) {
-        let aa = this.values.trim();
-        this.localStorageSystem(aa);
-        $("#ipvtext").blur();
+      toRuleClick(index) {
+        let value = this.$array.ImpArr(this.titleIncludes.split(' '));
+        this.storage(value.join(','));
+        // 存储 history
+        this.history('rule-history', (value.join(' ')));
+        //
+        this.$refs.ipvtextDom.blur();
+        //
         setTimeout(() => {
-          this.$nextTick(() => {
-            this.$router.push({
-              path: '/rulesCount',
-              query: {id: this.prestrain[index].id, MathTime: global.timestamp}
-            });
-          })
+          this.$router.push({path: '/rulesCount', query: {id: this.prestrain[index].id}});
         }, 500)
       },
       // 清除按钮
       dseClear() {
-        window.localStorage.removeItem("HistorySearch");
+        this.$storage.localStorage.del("HistorySearch");
         this.Newarr = [];
         this.HistoryS = true;
       },
-      // 点击换一换
-      InABatchS() {
-        this.hotResults();
-      },
       // 最近搜索按钮
       dseResultOne(index) {
-        this.values = this.defaultResult[index];
+        this.titleIncludes = this.Newarr[index];
         this.searchInput();
-        document.querySelector('#ipvtext').focus();
-        // this.$router.push({path: '/ruleslist', query: {inputVal: this.defaultResult[index]}});
+        this.$refs.ipvtextDom.focus();
       },
       // 相关推荐按钮
       dseResultTwo(index) {
-        this.values = this.hotResult[index];
+        this.titleIncludes = this.hotResult[index];
         this.searchInput();
-        document.querySelector('#ipvtext').focus();
-        if (this.isSearch) {
-          this.localStorageSystem(this.hotResult[index]);
-        }
+        this.$refs.ipvtextDom.focus();
       },
       // input清除按钮
       closeInputVal() {
-        this.values = '';
-        this.closeInputVals = false;
+        this.titleIncludes = '';
         this.prestrains = false;
-        document.querySelector('#ipvtext').focus();
+        this.$refs.ipvtextDom.focus();
       }
     }
   }
@@ -411,6 +312,7 @@
       align-items: center;
       justify-content: space-between;
       .seabox {
+        // width: expression(document.body.clientWidth<600?"600px":"auto");
         width: 90%;
         height: 100%;
         position: relative;
@@ -419,7 +321,7 @@
         overflow: hidden;
         form {
           input {
-            width: 90%;
+            width: 92%;
             height: 100%;
             background: #fff;
             color: #8d8d8d;

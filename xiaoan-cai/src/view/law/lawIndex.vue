@@ -4,7 +4,6 @@
       <!--<keep-alive>-->
         <router-view></router-view>
       <!--</keep-alive>-->
-      <!--<router-view v-if="!$route.meta.isKeepAlive"></router-view>-->
     </transition>
   </div>
 </template>

@@ -17,6 +17,7 @@ import storage from './common/storage'
 import MTAmethod from './common/MTAmethod'
 import ybstore from './common/YBstore'
 import share from './common/share'
+import styleStore from './common/styleStore'
 import 'lib-flexible' // 移动端rem编译
 
 Vue.use(VIEWUI)
@@ -35,6 +36,7 @@ Vue.prototype.$storage = storage;
 Vue.prototype.$MTAmethod = MTAmethod;
 Vue.prototype.$YBstore = ybstore;
 Vue.prototype.$share = share;
+Vue.prototype.$style = styleStore;
 
 // const VueTouch = require('vue-touch');
 // Vue.use(VueTouch, {name: 'v-touch'});
@@ -52,10 +54,7 @@ if (process.env.NODE_ENV === 'testing' || process.env.NODE_ENV === 'pre') {
     'logExtJs': '/static/log/log_ext.js',
     'logExtCss': '/static/log/log.css'
   };
-  window.MLogger.init(opt);
-} else if (process.env.NODE_ENV === 'product') {
-  // const fundebug = require("fundebug-javascript");
-  // fundebug.apikey = "0fc7d055cad641fe5a7b23e937431e773bc1d5d2b9904cbc9ed7119aef8edc0b";
+  // window.MLogger.init(opt);
 }
 // Axios.defaults.withCredentials = true;
 //

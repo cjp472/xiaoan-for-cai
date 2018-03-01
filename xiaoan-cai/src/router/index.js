@@ -1,13 +1,13 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-
+// 主组件
 const appIndex = () => import('@/view/index.vue')
 const lawIndex = () => import('@/view/law/lawIndex.vue')
 const afficheIndex = () => import('@/view/affiche/afficheIndex.vue')
 const myIndex = () => import('@/view/my/myIndex.vue')
 const reportIndex = () => import('@/view/report/reportIndex.vue')
 const especiallyIndex = () => import('@/view/especially/especiallyIndex.vue')
-// *登陆域注册 个人中心*/
+// 登陆域注册 个人中心
 const My = r => require.ensure([], () => r(require('@/view/tabbar/My.vue')), 'chunknameMy')
 const moreInfo = r => require.ensure([], () => r(require('@/components/login/more-info.vue')), 'chunknamePerson')
 const personalInfo = r => require.ensure([], () => r(require('@/components/login/personal-info.vue')), 'chunknamePerson')
@@ -35,31 +35,31 @@ const innerCustomerTables = r => require.ensure([], () => r(require('@/component
 const internalTables = r => require.ensure([], () => r(require('@/components/lookupTables/internalTables.vue')), 'chunknameTable')
 const searchPower = r => require.ensure([], () => r(require('@/components/lookupTables/searchPower.vue')), 'chunknameTable')
 const searchInner = r => require.ensure([], () => r(require('@/components/lookupTables/searchInner.vue')), 'chunknameTable')
-// *收藏夹*/
+// 收藏夹
 const collect = r => require.ensure([], () => r(require('@/components/collect/collect.vue')), 'chunknameCollect')
 const collectDetails = r => require.ensure([], () => r(require('@/components/collect/collectDetails.vue')), 'chunknameCollect')
 const collectGrooms = r => require.ensure([], () => r(require('@/components/collect/collectGroom.vue')), 'chunknameCollect')
-// *关注页面*/
+// 关注页面
 const Focus = r => require.ensure([], () => r(require('@/components/duty/Focus.vue')), 'chunknameFocus')
 const AddFocus = r => require.ensure([], () => r(require('@/components/duty/Addfocus.vue')), 'chunknameFocus')
-// *小安指南*/
+// 小安指南
 const brief = r => require.ensure([], () => r(require('../components/duty/brief.vue')), 'chunknameN')
 const briefs = r => require.ensure([], () => r(require('../components/duty/briefFixed.vue')), 'chunknameN')
 // 质押
 const pledge = r => require.ensure([], () => r(require('../components/duty/pledge.vue')), 'chunknameN')
-// *法规*/
+// 法规
 const Law = r => require.ensure([], () => r(require('@/view/tabbar/Law.vue')), 'chunknameLawNew')
 const newrules = r => require.ensure([], () => r(require('@/view/law/newRules.vue')), 'chunknameLaw')
 const ruleslist = r => require.ensure([], () => r(require('@/view/law/rulesList.vue')), 'chunknameLaw')
 const search = r => require.ensure([], () => r(require('@/view/law/search.vue')), 'chunknameLaw')
 const rulesCount = r => require.ensure([], () => r(require('@/view/law/rulesCount.vue')), 'chunknameLaw')
+// 精选
 const ads = r => require.ensure([], () => r(require('@/components/rules/ads.vue')), 'chunknameLaw')
-
-// *小鹅通跳转*/
+// 小鹅通跳转
 const application = r => require.ensure([], () => r(require('@/components/ticket/application.vue')), 'chunknameAffiche')
 const applicationList = r => require.ensure([], () => r(require('@/components/ticket/applicationList.vue')), 'chunknameE')
 const applicationImg = r => require.ensure([], () => r(require('@/components/ticket/applicationImg.vue')), 'chunknameE')
-// *公告*/
+// 公告
 const Affiche = r => require.ensure([], () => r(require('@/view/tabbar/Affiche.vue')), 'chunknameAffiche')
 const Affpdf = r => require.ensure([], () => r(require('@/view/affiche/Affpdf.vue')), 'chunknameAffiche')
 const newAffiche = r => require.ensure([], () => r(require('@/view/affiche/newaffiche.vue')), 'chunknameAffiche')
@@ -68,7 +68,7 @@ const afficheList = r => require.ensure([], () => r(require('@/view/affiche/affi
 const afficheSearch = r => require.ensure([], () => r(require('@/view/affiche/afficheSearch.vue')), 'chunknameAffiche')
 const afficheContent = r => require.ensure([], () => r(require('@/view/affiche/afficheContent.vue')), 'chunknameAffiche')
 // 测评引入
-const test = r => require.ensure([], () => r(require('@/view/testing/test.vue')), 'chunknamePersonTest')
+const test = r => require.ensure([], () => r(require('@/view/testing/testIndex.vue')), 'chunknamePersonTest')
 const testing = r => require.ensure([], () => r(require('@/view/testing/testing.vue')), 'chunknamePerson')
 const testPlate = r => require.ensure([], () => r(require('@/view/testing/testPlate.vue')), 'chunknameTest')
 const testingList = r => require.ensure([], () => r(require('@/view/testing/testingList.vue')), 'chunknameTest')
@@ -101,6 +101,8 @@ const supervise = r => require.ensure([], () => r(require('@/components/opinion/
 const superviseList = r => require.ensure([], () => r(require('@/components/opinion/superviseList.vue')), 'chunknameYQ')
 // 我的2017
 const myYear = r => require.ensure([], () => r(require('@/view/especially/my2017/myYear.vue')), 'chunknamemyYear')
+//
+const calendar = r => require.ensure([], () => r(require('@/view/especially/calendar/calendar.vue')), 'chunknamecalendar')
 
 Vue.use(Router);
 const router = new Router({
@@ -108,7 +110,7 @@ const router = new Router({
     {
       path: '/',
       name: 'index',
-      redirect: '/Law?MathTime=' + new Date().getTime(),
+      redirect: '/Law',
       component: appIndex,
       children: [{
         path: '/Law',
@@ -178,7 +180,7 @@ const router = new Router({
       ]
     },
     {
-      path: "/testing",
+      path: '/',
       name: 'testing',
       component: test,
       children: [
@@ -280,7 +282,7 @@ const router = new Router({
       children: []
     },
     {
-      path: "/affiche",
+      path: '/',
       name: 'affiche',
       component: afficheIndex,
       children: [
@@ -316,7 +318,7 @@ const router = new Router({
       ]
     },
     {
-      path: '/report',
+      path: '/',
       name: 'report',
       component: reportIndex,
       children: [
@@ -357,6 +359,13 @@ const router = new Router({
       component: especiallyIndex,
       children: [
         {
+          path: '/calendar',
+          name: 'calendar',
+          component: calendar,
+          meta: {
+            title: 'calendar'
+          }
+        }, {
           path: '/application',
           name: 'application',
           component: application,
@@ -679,10 +688,6 @@ const router = new Router({
       ]
     }
   ]
-});
-router.beforeEach((to, from, next) => {
-  window.document.title = to.meta.title;
-  next();
-});
+})
 
 export default router

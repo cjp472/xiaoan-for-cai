@@ -116,7 +116,7 @@
         components: {
             "xiaoan-loading": loading
         },
-        //离开当前页面后
+        // 离开当前页面后
         destroyed() {
             if (this.$cookie.getCookie("userId") === undefined) {
                 this.$cookie.deleteCookie("userId");
@@ -129,7 +129,7 @@
             }
             this.loading = false
         },
-        //页面构建前准备
+        // 页面构建前准备
         created() {
             this.xiaoanVersion = global.version;
             let user_id = this.$cookie.getCookie("userId");
@@ -163,7 +163,7 @@
             apiUserHome() {
                 this.$http({
                     method: 'GET',
-                    url: host + "userHome",
+                    url: this.$api.host + "userHome",
                     params: {}
                 }).then((res) => {
                     console.log("有userId", res);
@@ -218,7 +218,7 @@
             exit() {
                 this.$http({
                     method: 'GET',
-                    url: host + "exit",
+                    url: this.$api.host + "exit",
                     params: {
                         userId: this.user_Id
                     }
@@ -262,8 +262,8 @@
                     }
                 }).catch((err) => {
                     this.headerTouxiang = my_baseSvg.my[7].img;
-                    this.$toast({message: host + "getWxInfo", err, position: "middle", duration: 1500});
-                    //this.$cookie.clearCookies();
+                    this.$toast({message: this.$api.host + "getWxInfo", err, position: "middle", duration: 1500});
+                    // this.$cookie.clearCookies();
                 });
             },
             // 点击头像图片修改
@@ -281,7 +281,7 @@
             getPermissionCheckList(index) {
                 this.$http({
                     methods: "GET",
-                    url: host + "permission/getPermissionCheckList"
+                    url: this.$api.host + "permission/getPermissionCheckList"
                 }).then((res) => {
                     if (res.data.returnCode == -3) {
                         this.$router.push({path: "/customerTables", query: {MathTime: global.timestamp}});
